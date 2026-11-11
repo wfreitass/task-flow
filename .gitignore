@@ -1,0 +1,27 @@
+# Dependências
+node_modules/
+vendor/
+
+# Angular
+.angular/
+dist/
+coverage/
+
+# PHP
+.phpunit.cache/
+var/cache/
+var/log/
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+!.env.dist
+
+# IDE
+.idea/
+.vscode/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
