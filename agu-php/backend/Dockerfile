@@ -21,10 +21,13 @@ COPY . .
 # Instalar dependências do Symfony
 ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN composer config --no-plugins allow-plugins.symfony/flex true
-RUN composer install
+RUN composer install --no-interaction --no-scripts
 
 # Expor a porta
 EXPOSE 9000
+
+COPY --chmod=0755 docker/entrypoint.sh /usr/local/bin/agu-entrypoint
+ENTRYPOINT ["agu-entrypoint"]
 
 # Comando para iniciar o servidor
 CMD ["php-fpm"]
