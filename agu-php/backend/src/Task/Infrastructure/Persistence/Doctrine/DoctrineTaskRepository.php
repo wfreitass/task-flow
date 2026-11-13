@@ -5,6 +5,7 @@ namespace App\Task\Infrastructure\Persistence\Doctrine;
 use App\Shared\Domain\SortDirection;
 use App\Task\Domain\Entity\Task;
 use App\Task\Domain\Enum\TaskPriority;
+use App\Task\Domain\Enum\TaskScope;
 use App\Task\Domain\Enum\TaskSortField;
 use App\Task\Domain\Enum\TaskStatus;
 use App\Task\Domain\Repository\TaskCriteria;
@@ -47,10 +48,19 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
         $this->entityManager->flush();
     }
 
-    public function findOwnedById(int $id, int $ownerId): ?Task
+    public function findAccessibleById(int $id, int $userId): ?Task
     {
-        $entity = $this->entityManager->getRepository(TaskEntity::class)
-            ->findOneBy(['id' => $id, 'createdBy' => $ownerId, 'deletedAt' => null]);
+        /** @var TaskEntity|null $entity */
+        $entity = $this->entityManager->createQueryBuilder()
+            ->select('t')
+            ->from(TaskEntity::class, 't')
+            ->where('t.id = :id')
+            ->andWhere('t.deletedAt IS NULL')
+            ->andWhere('(t.createdBy = :user OR t.assignedTo = :user)')
+            ->setParameter('id', $id)
+            ->setParameter('user', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
 
         return null === $entity ? null : $this->mapper->toDomain($entity);
     }
@@ -71,15 +81,22 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
     }
 
     /**
-     * Base da busca: sempre só tarefas do dono e não excluídas, mais os filtros pedidos.
+     * Base da busca: sempre só tarefas que o usuário enxerga (criou ou é o responsável, conforme o escopo)
+     * e não excluídas, mais os filtros pedidos.
      */
     private function filtered(TaskCriteria $criteria): QueryBuilder
     {
+        $visibility = match ($criteria->scope) {
+            TaskScope::All => '(t.createdBy = :viewer OR t.assignedTo = :viewer)',
+            TaskScope::Created => 't.createdBy = :viewer',
+            TaskScope::Assigned => 't.assignedTo = :viewer',
+        };
+
         $query = $this->entityManager->createQueryBuilder()
             ->from(TaskEntity::class, 't')
-            ->where('t.createdBy = :owner')
+            ->where($visibility)
             ->andWhere('t.deletedAt IS NULL')
-            ->setParameter('owner', $criteria->ownerId);
+            ->setParameter('viewer', $criteria->viewerId);
 
         if ([] !== $criteria->statuses) {
             // Os ids do catálogo ficam na infraestrutura (TaskStatusType).

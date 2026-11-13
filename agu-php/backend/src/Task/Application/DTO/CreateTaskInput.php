@@ -16,6 +16,7 @@ final class CreateTaskInput
         public readonly TaskPriority $priority,
         public readonly ?\DateTimeImmutable $startDate,
         public readonly ?\DateTimeImmutable $dueDate,
+        public readonly ?int $assignedTo = null,
         public readonly array $attachments = [],
     ) {
     }

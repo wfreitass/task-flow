@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Rotas de autenticação. `register` e `login` são públicas (firewall "public" em config/packages/security.yaml);
- * `me` e `logout` exigem JWT (firewall "api").
+ * `me` e `logout` exigem JWT (firewall "api"). A busca de usuários está no UserController.
  */
 #[AsController]
 #[Route('/api')]
@@ -54,6 +54,9 @@ final class AuthController
         return new JsonResponse(['token' => $accessToken->token]);
     }
 
+    /**
+     * O usuário dono do token. Serve para o frontend restaurar a sessão.
+     */
     #[Route('/me', name: 'auth_me', methods: ['GET'])]
     public function me(GetCurrentUserService $getCurrentUser): JsonResponse
     {

@@ -6,11 +6,11 @@ use App\Task\Domain\Enum\TaskPriority;
 
 /**
  * Alteração parcial: só os campos listados em `$provided` são alterados. É o que distingue
- * "não enviado" (mantém) de "enviado como null" (limpa descrição, início ou vencimento).
+ * "não enviado" (mantém) de "enviado como null" (limpa descrição, início, vencimento ou responsável).
  */
 final class UpdateTaskInput
 {
-    public const FIELDS = ['title', 'description', 'priority', 'startDate', 'dueDate'];
+    public const FIELDS = ['title', 'description', 'priority', 'startDate', 'dueDate', 'assignedTo'];
 
     /**
      * @param list<string> $provided nomes dos campos enviados (de self::FIELDS)
@@ -23,6 +23,7 @@ final class UpdateTaskInput
         public readonly ?TaskPriority $priority = null,
         public readonly ?\DateTimeImmutable $startDate = null,
         public readonly ?\DateTimeImmutable $dueDate = null,
+        public readonly ?int $assignedTo = null,
     ) {
     }
 

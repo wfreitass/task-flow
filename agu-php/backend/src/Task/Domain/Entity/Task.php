@@ -5,6 +5,7 @@ namespace App\Task\Domain\Entity;
 use App\Task\Domain\Enum\TaskPriority;
 use App\Task\Domain\Enum\TaskStatus;
 use App\Task\Domain\Exception\InvalidStatusTransitionException;
+use App\Task\Domain\Exception\TaskAccessDeniedException;
 use App\Task\Domain\Exception\InvalidTaskException;
 
 final class Task
@@ -13,6 +14,7 @@ final class Task
 
     private function __construct(
         private int $createdBy,
+        private ?int $assignedTo,
         private string $title,
         private ?string $description,
         private TaskPriority $priority,
@@ -33,6 +35,7 @@ final class Task
         TaskPriority $priority,
         ?\DateTimeImmutable $startDate,
         ?\DateTimeImmutable $dueDate,
+        ?int $assignedTo,
         \DateTimeImmutable $now,
     ): self {
         if ($createdBy <= 0) {
@@ -45,6 +48,7 @@ final class Task
 
         return new self(
             createdBy: $createdBy,
+            assignedTo: $assignedTo,
             title: self::normalizeTitle($title),
             description: self::normalizeDescription($description),
             priority: $priority,
@@ -56,6 +60,56 @@ final class Task
             createdAt: $now,
             updatedAt: $now,
         );
+    }
+
+    public function isCreatedBy(int $userId): bool
+    {
+        return $this->createdBy === $userId;
+    }
+
+    public function isAssignedTo(int $userId): bool
+    {
+        return null !== $this->assignedTo && $this->assignedTo === $userId;
+    }
+
+    /**
+     * Quem criou e quem é o responsável enxergam a tarefa.
+     */
+    public function canBeViewedBy(int $userId): bool
+    {
+        return $this->isCreatedBy($userId) || $this->isAssignedTo($userId);
+    }
+
+    /**
+     * Editar dados, atribuir e excluir são operações de quem criou a tarefa. O responsável pode
+     * ver, mudar o status e comentar (essas não passam por aqui).
+     *
+     * @throws TaskAccessDeniedException
+     */
+    public function assertManagedBy(int $userId): void
+    {
+        if (!$this->isCreatedBy($userId)) {
+            throw new TaskAccessDeniedException();
+        }
+    }
+
+    /**
+     * Atribui a tarefa a um usuário (ou a ninguém, com null) e devolve o que mudou, para o histórico.
+     * Que o usuário exista e esteja ativo é conferido antes, pela aplicação: aqui só há ids.
+     *
+     * @return array{old: array<string, int|null>, new: array<string, int|null>}
+     */
+    public function assignTo(?int $userId, \DateTimeImmutable $now): array
+    {
+        if ($userId === $this->assignedTo) {
+            return ['old' => [], 'new' => []];
+        }
+
+        $old = ['assigned_to' => $this->assignedTo];
+        $this->assignedTo = $userId;
+        $this->updatedAt = $now;
+
+        return ['old' => $old, 'new' => ['assigned_to' => $userId]];
     }
 
     /**
@@ -163,6 +217,11 @@ final class Task
         return $this->createdBy;
     }
 
+    public function assignedTo(): ?int
+    {
+        return $this->assignedTo;
+    }
+
     public function title(): string
     {
         return $this->title;
@@ -216,11 +275,12 @@ final class Task
     /**
      * Estado relevante da tarefa, em tipos escalares, para o histórico.
      *
-     * @return array<string, string|null>
+     * @return array<string, string|int|null>
      */
     public function snapshot(): array
     {
         return [
+            'assigned_to' => $this->assignedTo,
             'title' => $this->title,
             'description' => $this->description,
             'priority' => $this->priority->value,

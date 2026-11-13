@@ -9,13 +9,14 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * Contrato HTTP de PATCH /api/tasks/{id}: alteração parcial. Só os campos enviados são alterados;
- * `description`, `startAt` e `dueAt` aceitam `null` para limpar o valor. O status tem rota própria.
+ * `description`, `startAt`, `dueAt` e `assignedTo` aceitam `null` para limpar o valor (`assignedTo: null` tira o
+ * responsável). O status tem rota própria. Só quem criou a tarefa pode alterá-la.
  */
 final class UpdateTaskRequest
 {
     /** Campos da API → campos do UpdateTaskInput. */
-    private const FIELDS = ['title' => 'title', 'description' => 'description', 'priority' => 'priority', 'startAt' => 'startDate', 'dueAt' => 'dueDate'];
-    private const NULLABLE = ['description', 'startAt', 'dueAt'];
+    private const FIELDS = ['title' => 'title', 'description' => 'description', 'priority' => 'priority', 'startAt' => 'startDate', 'dueAt' => 'dueDate', 'assignedTo' => 'assignedTo'];
+    private const NULLABLE = ['description', 'startAt', 'dueAt', 'assignedTo'];
 
     /** @var array<string, mixed> campos enviados, já filtrados */
     private array $payload = [];
@@ -35,7 +36,7 @@ final class UpdateTaskRequest
     public function validate(ExecutionContextInterface $context): void
     {
         if ([] === $this->payload) {
-            $context->buildViolation('Informe ao menos um campo para alterar: title, description, priority, startAt ou dueAt.')
+            $context->buildViolation('Informe ao menos um campo para alterar: title, description, priority, startAt, dueAt ou assignedTo.')
                 ->atPath('body')
                 ->addViolation();
 
@@ -69,6 +70,14 @@ final class UpdateTaskRequest
                 continue; // null limpa o valor
             }
 
+            if ('assignedTo' === $field) {
+                if (!AssigneeId::isValid($value)) {
+                    $context->buildViolation('O responsável deve ser o id de um usuário (número inteiro positivo) ou null.')->atPath('assignedTo')->addViolation();
+                }
+
+                continue;
+            }
+
             $context->getValidator()->inContext($context)->atPath($field)->validate($value, $rules[$field]);
         }
     }
@@ -88,6 +97,7 @@ final class UpdateTaskRequest
             priority: null === $get('priority') ? null : TaskPriority::from((string) $get('priority')),
             startDate: null === $get('startAt') ? null : new \DateTimeImmutable((string) $get('startAt')),
             dueDate: null === $get('dueAt') ? null : new \DateTimeImmutable((string) $get('dueAt')),
+            assignedTo: AssigneeId::parse($get('assignedTo')),
         );
     }
 }

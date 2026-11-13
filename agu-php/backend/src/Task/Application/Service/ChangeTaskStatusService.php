@@ -19,18 +19,20 @@ final class ChangeTaskStatusService
         private readonly TaskHistoryRepositoryInterface $history,
         private readonly ClockInterface $clock,
         private readonly TransactionRunnerInterface $transactions,
+        private readonly TaskOutputFactory $outputs,
     ) {
     }
 
     /**
-     * Muda o status respeitando as transições permitidas. Pedir o status que a tarefa já tem não faz nada.
+     * Muda o status respeitando as transições permitidas. Quem criou a tarefa e o responsável podem. Pedir o
+     * status que a tarefa já tem não faz nada.
      *
      * @throws \App\Task\Domain\Exception\InvalidStatusTransitionException
      */
     public function execute(ChangeTaskStatusInput $input, int $authenticatedUserId): TaskOutput
     {
         return $this->transactions->run(function () use ($input, $authenticatedUserId): TaskOutput {
-            $task = $this->tasks->findOwnedById($input->taskId, $authenticatedUserId) ?? throw new TaskNotFoundException();
+            $task = $this->tasks->findAccessibleById($input->taskId, $authenticatedUserId) ?? throw new TaskNotFoundException();
             $now = $this->clock->now();
             $previous = $task->status();
             $previousCompletedAt = $task->completedAt();
@@ -47,7 +49,7 @@ final class ChangeTaskStatusService
                 ));
             }
 
-            return TaskOutput::fromTask($task);
+            return $this->outputs->one($task);
         });
     }
 }

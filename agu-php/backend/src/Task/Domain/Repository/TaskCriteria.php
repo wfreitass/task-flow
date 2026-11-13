@@ -4,11 +4,13 @@ namespace App\Task\Domain\Repository;
 
 use App\Shared\Domain\SortDirection;
 use App\Task\Domain\Enum\TaskPriority;
+use App\Task\Domain\Enum\TaskScope;
 use App\Task\Domain\Enum\TaskSortField;
 use App\Task\Domain\Enum\TaskStatus;
 
 /**
- * Filtros, ordenação e paginação de uma busca de tarefas. Sempre restrita às tarefas de um dono.
+ * Filtros, ordenação e paginação de uma busca de tarefas. Sempre restrita às tarefas que `viewerId` enxerga
+ * (criou ou é o responsável); `scope` pode restringir a só uma das duas.
  */
 final class TaskCriteria
 {
@@ -22,7 +24,8 @@ final class TaskCriteria
      * @param list<TaskPriority> $priorities vazio = qualquer prioridade
      */
     public function __construct(
-        public readonly int $ownerId,
+        public readonly int $viewerId,
+        public readonly TaskScope $scope = TaskScope::All,
         public readonly array $statuses = [],
         public readonly array $priorities = [],
         public readonly ?string $search = null,

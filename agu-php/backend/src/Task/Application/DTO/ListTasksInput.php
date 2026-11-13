@@ -4,6 +4,7 @@ namespace App\Task\Application\DTO;
 
 use App\Shared\Domain\SortDirection;
 use App\Task\Domain\Enum\TaskPriority;
+use App\Task\Domain\Enum\TaskScope;
 use App\Task\Domain\Enum\TaskSortField;
 use App\Task\Domain\Enum\TaskStatus;
 
@@ -23,6 +24,7 @@ final class ListTasksInput
         public readonly SortDirection $direction = SortDirection::Desc,
         public readonly int $page = 1,
         public readonly int $perPage = 20,
+        public readonly TaskScope $scope = TaskScope::All,
     ) {
     }
 }

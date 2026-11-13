@@ -18,6 +18,8 @@ final class TaskResponse
     {
         $response = [
             'id' => $task->id,
+            'createdBy' => $task->createdBy,
+            'assignee' => null === $task->assignee ? null : ['id' => $task->assignee->id, 'username' => $task->assignee->username],
             'title' => $task->title,
             'description' => $task->description,
             'priority' => $task->priority->value,

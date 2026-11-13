@@ -9,10 +9,12 @@ use App\Shared\Application\Port\TransactionRunnerInterface;
 use App\Task\Application\DTO\AttachmentOutput;
 use App\Task\Application\DTO\CreateTaskInput;
 use App\Task\Application\DTO\TaskOutput;
+use App\Task\Application\Port\UserDirectoryInterface;
 use App\Task\Domain\Entity\Task;
 use App\Task\Domain\Entity\TaskAttachment;
 use App\Task\Domain\Entity\TaskHistory;
 use App\Task\Domain\Enum\TaskHistoryAction;
+use App\Task\Domain\Exception\InvalidAssigneeException;
 use App\Task\Domain\Repository\TaskAttachmentRepositoryInterface;
 use App\Task\Domain\Repository\TaskHistoryRepositoryInterface;
 use App\Task\Domain\Repository\TaskRepositoryInterface;
@@ -27,6 +29,8 @@ final class CreateTaskService
         private readonly TaskAttachmentRepositoryInterface $attachments,
         private readonly FileStorageInterface $storage,
         private readonly MimeTypeDetectorInterface $mimeTypes,
+        private readonly UserDirectoryInterface $directory,
+        private readonly TaskOutputFactory $outputs,
     ) {
     }
 
@@ -48,8 +52,14 @@ final class CreateTaskService
             $input->priority,
             $input->startDate,
             $input->dueDate,
+            $input->assignedTo,
             $now,
         );
+
+        // O responsável pode ser qualquer usuário ativo, não só quem cria. Confere antes de gravar qualquer arquivo.
+        if (null !== $input->assignedTo && null === $this->directory->findActiveById($input->assignedTo)) {
+            throw InvalidAssigneeException::notFound($input->assignedTo);
+        }
 
         TaskAttachment::assertCount(\count($input->attachments));
         $files = [];
@@ -103,7 +113,7 @@ final class CreateTaskService
                     $outputs[] = AttachmentOutput::fromAttachment($attachment);
                 }
 
-                return TaskOutput::fromTask($task, $outputs);
+                return $this->outputs->one($task, $outputs);
             });
         } catch (\Throwable $exception) {
             foreach ($storedKeys as $storageKey) {

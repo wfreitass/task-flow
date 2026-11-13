@@ -38,6 +38,9 @@ final class CreateTaskRequest
     #[Assert\DateTime(format: \DATE_ATOM, message: 'A data de vencimento deve estar no formato ISO 8601 (ex.: 2026-12-01T18:00:00-03:00).')]
     public mixed $dueAt = null;
 
+    /** Id do usuário responsável pela tarefa (opcional); pode ser outro usuário que não quem a cria. */
+    public mixed $assignedTo = null;
+
     /** @var list<mixed> o que chegou em `attachments[]`; cada item deve ser um arquivo válido */
     public array $attachments = [];
 
@@ -53,9 +56,18 @@ final class CreateTaskRequest
         $request->priority = $payload['priority'] ?? null;
         $request->startAt = $payload['startAt'] ?? null;
         $request->dueAt = $payload['dueAt'] ?? null;
+        $request->assignedTo = $payload['assignedTo'] ?? null;
         $request->attachments = $files;
 
         return $request;
+    }
+
+    #[Assert\Callback]
+    public function validateAssignee(ExecutionContextInterface $context): void
+    {
+        if (null !== $this->assignedTo && !AssigneeId::isValid($this->assignedTo)) {
+            $context->buildViolation('O responsável deve ser o id de um usuário (número inteiro positivo).')->atPath('assignedTo')->addViolation();
+        }
     }
 
     /**
@@ -97,6 +109,7 @@ final class CreateTaskRequest
             null === $this->priority ? TaskPriority::Medium : TaskPriority::from((string) $this->priority),
             null === $this->startAt ? null : new \DateTimeImmutable((string) $this->startAt),
             null === $this->dueAt ? null : new \DateTimeImmutable((string) $this->dueAt),
+            AssigneeId::parse($this->assignedTo),
             array_map(
                 static fn (UploadedFile $file): IncomingFile => new IncomingFile($file->getPathname(), $file->getClientOriginalName(), (int) $file->getSize()),
                 array_values(array_filter($this->attachments, static fn (mixed $file): bool => $file instanceof UploadedFile)),

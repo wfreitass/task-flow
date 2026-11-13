@@ -32,6 +32,7 @@ final class TaskMapper
     public function fill(TaskEntity $entity, Task $task): void
     {
         $entity->createdBy = $task->createdBy();
+        $entity->assignedTo = $task->assignedTo();
         $entity->title = $task->title();
         $entity->description = $task->description();
         $entity->priority = $task->priority();
@@ -52,6 +53,7 @@ final class TaskMapper
         return $this->hydrator->hydrate(Task::class, [
             'id' => $entity->id,
             'createdBy' => $entity->createdBy,
+            'assignedTo' => $entity->assignedTo,
             'title' => $entity->title,
             'description' => $entity->description,
             'priority' => $entity->priority,

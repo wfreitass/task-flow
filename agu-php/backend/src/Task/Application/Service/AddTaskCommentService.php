@@ -26,12 +26,13 @@ final class AddTaskCommentService
     }
 
     /**
-     * Comenta uma tarefa do usuário autenticado. Tarefa alheia, excluída ou inexistente responde "não encontrada".
+     * Comenta uma tarefa. Quem criou a tarefa e o responsável podem comentar. Tarefa sem relação com o usuário,
+     * excluída ou inexistente responde "não encontrada".
      */
     public function execute(AddTaskCommentInput $input, int $authenticatedUserId): CommentOutput
     {
         return $this->transactions->run(function () use ($input, $authenticatedUserId): CommentOutput {
-            $task = $this->tasks->findOwnedById($input->taskId, $authenticatedUserId) ?? throw new TaskNotFoundException();
+            $task = $this->tasks->findAccessibleById($input->taskId, $authenticatedUserId) ?? throw new TaskNotFoundException();
             $now = $this->clock->now();
 
             $comment = TaskComment::create((int) $task->id(), $authenticatedUserId, $input->content, $now);

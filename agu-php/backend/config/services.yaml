@@ -1,6 +1,8 @@
 parameters:
     # Armazenamento PRIVADO dos anexos: fora de public/, só acessível por um endpoint que valide o acesso.
     app.uploads_directory: '%kernel.project_dir%/var/uploads'
+    # Validade da listagem de tarefas no cache, em segundos. É a rede de segurança: a invalidação por escrita é imediata.
+    app.task_list_cache_ttl: 300
 
 services:
     _defaults:
@@ -17,6 +19,11 @@ services:
             - '../src/*/Infrastructure/Persistence/Doctrine/Type/'
             - '../src/Kernel.php'
 
+    # Serviço de cache: usa o pool com tags definido em config/packages/cache.yaml.
+    App\Shared\Infrastructure\Cache\TaggedPoolCache:
+        arguments:
+            $pool: '@cache.app_data'
+
     # Serviço de upload: o diretório de destino vem do parâmetro acima.
     App\Shared\Infrastructure\Storage\FileUploader:
         arguments:
@@ -30,14 +37,22 @@ services:
     App\Shared\Application\Port\ClockInterface: '@App\Shared\Infrastructure\Clock\SystemClock'
     App\Shared\Application\Port\TransactionRunnerInterface: '@App\Shared\Infrastructure\Persistence\DoctrineTransactionRunner'
     App\Shared\Application\Port\FileStorageInterface: '@App\Shared\Infrastructure\Storage\FileUploader'
+    App\Shared\Application\Port\CacheInterface: '@App\Shared\Infrastructure\Cache\TaggedPoolCache'
     App\Shared\Application\Port\MimeTypeDetectorInterface: '@App\Shared\Infrastructure\Storage\FinfoMimeTypeDetector'
 
-    App\Task\Domain\Repository\TaskRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskRepository'
+    # O repositório de tarefas é o decorator com cache, que envolve o repositório Doctrine.
+    App\Task\Domain\Repository\TaskRepositoryInterface: '@App\Task\Infrastructure\Cache\CachingTaskRepository'
+    App\Task\Infrastructure\Cache\CachingTaskRepository:
+        arguments:
+            $inner: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskRepository'
+            $listTtlSeconds: '%app.task_list_cache_ttl%'
     App\Task\Domain\Repository\TaskHistoryRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskHistoryRepository'
     App\Task\Domain\Repository\TaskAttachmentRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskAttachmentRepository'
     App\Task\Domain\Repository\TaskCommentRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskCommentRepository'
     App\Shared\Application\Port\CurrentUserIdProviderInterface: '@App\User\Infrastructure\Security\AuthenticatedUserIdProvider'
 
     App\User\Domain\Repository\UserRepositoryInterface: '@App\User\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
+    # O contexto Task consulta usuários por esta porta; quem a implementa é o contexto User.
+    App\Task\Application\Port\UserDirectoryInterface: '@App\User\Infrastructure\Directory\UserDirectory'
     App\User\Application\Port\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
     App\User\Application\Port\TokenIssuerInterface: '@App\User\Infrastructure\Security\LexikTokenIssuer'

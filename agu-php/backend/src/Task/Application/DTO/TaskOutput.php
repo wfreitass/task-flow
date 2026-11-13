@@ -22,13 +22,14 @@ final class TaskOutput
         public readonly \DateTimeImmutable $updatedAt,
         /** @var list<AttachmentOutput>|null null = anexos não carregados nesta operação */
         public readonly ?array $attachments = null,
+        public readonly ?AssigneeOutput $assignee = null,
     ) {
     }
 
     /**
      * @param list<AttachmentOutput>|null $attachments
      */
-    public static function fromTask(Task $task, ?array $attachments = null): self
+    public static function fromTask(Task $task, ?array $attachments = null, ?AssigneeOutput $assignee = null): self
     {
         return new self(
             (int) $task->id(),
@@ -43,6 +44,7 @@ final class TaskOutput
             $task->createdAt(),
             $task->updatedAt(),
             $attachments,
+            $assignee,
         );
     }
 }

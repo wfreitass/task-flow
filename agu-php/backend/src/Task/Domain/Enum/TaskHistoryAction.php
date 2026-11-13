@@ -11,6 +11,7 @@ enum TaskHistoryAction: string
     case Created = 'created';
     case Updated = 'updated';
     case StatusChanged = 'status_changed';
+    case Assigned = 'assigned';
     case Deleted = 'deleted';
     case AttachmentAdded = 'attachment_added';
     case CommentAdded = 'comment_added';

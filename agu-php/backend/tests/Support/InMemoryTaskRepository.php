@@ -24,10 +24,10 @@ final class InMemoryTaskRepository implements TaskRepositoryInterface
         // As entidades são guardadas por referência: já refletem as alterações.
     }
 
-    public function findOwnedById(int $id, int $ownerId): ?Task
+    public function findAccessibleById(int $id, int $userId): ?Task
     {
         foreach ($this->tasks as $task) {
-            if ($task->id() === $id && $task->createdBy() === $ownerId && !$task->isDeleted()) {
+            if ($task->id() === $id && $task->canBeViewedBy($userId) && !$task->isDeleted()) {
                 return $task;
             }
         }
@@ -39,7 +39,7 @@ final class InMemoryTaskRepository implements TaskRepositoryInterface
     {
         $owned = array_values(array_filter(
             $this->tasks,
-            static fn (Task $task): bool => $task->createdBy() === $criteria->ownerId && !$task->isDeleted(),
+            static fn (Task $task): bool => $task->canBeViewedBy($criteria->viewerId) && !$task->isDeleted(),
         ));
 
         return new TaskPage(\array_slice($owned, $criteria->offset(), $criteria->perPage), \count($owned));

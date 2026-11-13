@@ -34,6 +34,45 @@ final class DoctrineUserRepository implements UserRepositoryInterface
         return $this->toDomain($this->entityManager->getRepository(UserEntity::class)->findOneBy(['email' => mb_strtolower(trim($email))]));
     }
 
+    public function findActive(): array
+    {
+        $entities = $this->entityManager->getRepository(UserEntity::class)->findBy(['isActive' => true], ['username' => 'ASC', 'id' => 'ASC']);
+
+        return array_map(fn (UserEntity $entity): User => $this->mapper->toDomain($entity), $entities);
+    }
+
+    public function findByIds(array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+
+        $entities = $this->entityManager->getRepository(UserEntity::class)->findBy(['id' => $ids]);
+
+        return array_map(fn (UserEntity $entity): User => $this->mapper->toDomain($entity), $entities);
+    }
+
+    public function searchActive(string $query, int $limit): array
+    {
+        $query = trim($query);
+
+        /** @var list<UserEntity> $entities */
+        $entities = $this->entityManager->createQueryBuilder()
+            ->select('u')
+            ->from(UserEntity::class, 'u')
+            ->where('u.isActive = true')
+            ->andWhere('(u.username LIKE :like OR u.email = :email)')
+            // Escapa os curingas do LIKE: a busca é por texto literal.
+            ->setParameter('like', '%'.addcslashes($query, '%_\\').'%')
+            ->setParameter('email', mb_strtolower($query))
+            ->orderBy('u.username', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return array_map(fn (UserEntity $entity): User => $this->mapper->toDomain($entity), $entities);
+    }
+
     public function add(User $user): void
     {
         $entity = $this->mapper->toEntity($user);

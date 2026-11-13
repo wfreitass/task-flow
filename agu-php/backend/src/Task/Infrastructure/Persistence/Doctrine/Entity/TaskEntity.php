@@ -10,8 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Modelo de persistência da tabela `tasks` (migration Version20261111000000). Não tem regra de negócio:
  * é só a forma como o Doctrine lê e grava. A entidade de domínio é App\Task\Domain\Entity\Task;
- * a conversão entre as duas é feita pelo TaskMapper. As colunas `assigned_to` e `parent_task_id` ainda não são
- * usadas (dependem das decisões sobre responsável e subtarefas) e ficam com o valor padrão do banco.
+ * a conversão entre as duas é feita pelo TaskMapper. A coluna `parent_task_id` ainda não é usada (depende da
+ * decisão sobre subtarefas) e fica com o valor padrão do banco.
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'tasks')]
@@ -24,6 +24,10 @@ class TaskEntity
 
     #[ORM\Column(name: 'created_by', type: Types::INTEGER, options: ['unsigned' => true])]
     public int $createdBy;
+
+    // Responsável pela tarefa (FK para users). Pode ser outro usuário que não quem a criou.
+    #[ORM\Column(name: 'assigned_to', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
+    public ?int $assignedTo = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     public string $title;

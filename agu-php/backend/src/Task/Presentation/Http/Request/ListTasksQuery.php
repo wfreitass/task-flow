@@ -5,6 +5,7 @@ namespace App\Task\Presentation\Http\Request;
 use App\Shared\Domain\SortDirection;
 use App\Task\Application\DTO\ListTasksInput;
 use App\Task\Domain\Enum\TaskPriority;
+use App\Task\Domain\Enum\TaskScope;
 use App\Task\Domain\Enum\TaskSortField;
 use App\Task\Domain\Enum\TaskStatus;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -12,7 +13,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * Parâmetros de GET /api/tasks (query string): paginação, filtros e ordenação.
- * Todos opcionais. `status` e `priority` aceitam vários valores separados por vírgula.
+ * Todos opcionais. `status` e `priority` aceitam vários valores separados por vírgula. `scope` escolhe entre as
+ * tarefas que o usuário criou, as atribuídas a ele ou ambas (padrão).
  */
 final class ListTasksQuery
 {
@@ -46,13 +48,16 @@ final class ListTasksQuery
     #[Assert\Type(type: 'string', message: 'O sentido da ordenação deve ser um texto.')]
     public mixed $order = null;
 
+    #[Assert\Type(type: 'string', message: 'O escopo deve ser um texto.')]
+    public mixed $scope = null;
+
     /**
      * @param array<mixed> $query
      */
     public static function fromArray(array $query): self
     {
         $request = new self();
-        foreach (['page', 'perPage', 'status', 'priority', 'q', 'dueFrom', 'dueTo', 'sort', 'order'] as $field) {
+        foreach (['page', 'perPage', 'status', 'priority', 'q', 'dueFrom', 'dueTo', 'sort', 'order', 'scope'] as $field) {
             $request->$field = $query[$field] ?? null;
         }
 
@@ -67,6 +72,9 @@ final class ListTasksQuery
 
         if (null !== $this->sort && \is_string($this->sort) && !\in_array($this->sort, TaskSortField::values(), true)) {
             $context->buildViolation('Ordenação inválida. Valores aceitos: '.implode(', ', TaskSortField::values()).'.')->atPath('sort')->addViolation();
+        }
+        if (null !== $this->scope && \is_string($this->scope) && !\in_array($this->scope, TaskScope::values(), true)) {
+            $context->buildViolation('Escopo inválido. Valores aceitos: '.implode(', ', TaskScope::values()).'.')->atPath('scope')->addViolation();
         }
         if (null !== $this->order && \is_string($this->order) && !\in_array($this->order, ['asc', 'desc'], true)) {
             $context->buildViolation('Sentido inválido. Valores aceitos: asc, desc.')->atPath('order')->addViolation();
@@ -88,6 +96,7 @@ final class ListTasksQuery
             direction: null === $this->order ? SortDirection::Desc : SortDirection::from((string) $this->order),
             page: null === $this->page ? 1 : (int) $this->page,
             perPage: null === $this->perPage ? 20 : (int) $this->perPage,
+            scope: null === $this->scope ? TaskScope::All : TaskScope::from((string) $this->scope),
         );
     }
 

@@ -9,7 +9,10 @@ use App\Shared\Application\Port\FileStorageInterface;
 use App\Shared\Application\Port\MimeTypeDetectorInterface;
 use App\Shared\Application\Port\TransactionRunnerInterface;
 use App\Task\Application\DTO\CreateTaskInput;
+use App\Task\Application\DTO\DirectoryUser;
+use App\Task\Application\Port\UserDirectoryInterface;
 use App\Task\Application\Service\CreateTaskService;
+use App\Task\Application\Service\TaskOutputFactory;
 use App\Task\Domain\Enum\TaskHistoryAction;
 use App\Task\Domain\Enum\TaskPriority;
 use App\Task\Domain\Enum\TaskStatus;
@@ -80,7 +83,20 @@ final class CreateTaskServiceTest extends TestCase
             }
         };
 
-        $this->service = new CreateTaskService($this->tasks, $this->history, $clock, $this->transactions, $this->attachments, $this->storage, $detector);
+        // Dublê: todo id de usuário existe e está ativo.
+        $directory = new class implements UserDirectoryInterface {
+            public function findActiveById(int $id): ?DirectoryUser
+            {
+                return new DirectoryUser($id, 'usuario'.$id);
+            }
+
+            public function findByIds(array $ids): array
+            {
+                return array_combine($ids, array_map(static fn (int $id): DirectoryUser => new DirectoryUser($id, 'usuario'.$id), $ids)) ?: [];
+            }
+        };
+
+        $this->service = new CreateTaskService($this->tasks, $this->history, $clock, $this->transactions, $this->attachments, $this->storage, $detector, $directory, new TaskOutputFactory($directory));
     }
 
     public function testCreatesTaskForAuthenticatedUserAndRecordsHistory(): void

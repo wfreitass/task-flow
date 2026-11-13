@@ -21,12 +21,14 @@ final class DeleteTaskService
     }
 
     /**
-     * Exclusão lógica: a tarefa some das consultas, mas o registro e o histórico permanecem.
+     * Exclusão lógica: a tarefa some das consultas, mas o registro e o histórico permanecem. Só quem criou a tarefa
+     * pode excluí-la; o responsável não.
      */
     public function execute(int $taskId, int $authenticatedUserId): void
     {
         $this->transactions->run(function () use ($taskId, $authenticatedUserId): void {
-            $task = $this->tasks->findOwnedById($taskId, $authenticatedUserId) ?? throw new TaskNotFoundException();
+            $task = $this->tasks->findAccessibleById($taskId, $authenticatedUserId) ?? throw new TaskNotFoundException();
+            $task->assertManagedBy($authenticatedUserId);
             $now = $this->clock->now();
             $snapshot = $task->snapshot();
 

@@ -15,6 +15,23 @@ interface UserRepositoryInterface
     public function findByEmail(string $email): ?User;
 
     /**
+     * @param list<int> $ids
+     *
+     * @return list<User> os que existem (ativos ou não), em qualquer ordem
+     */
+    public function findByIds(array $ids): array;
+
+    /**
+     * Usuários **ativos** cujo nome de usuário contém o texto, ou cujo e-mail é exatamente ele, por ordem de nome.
+     *
+     * @return list<User>
+     */
+    public function searchActive(string $query, int $limit): array;
+
+    /** @return list<User> */
+    public function findActive(): array;
+
+    /**
      * Persiste um novo usuário.
      *
      * @throws UsernameAlreadyTakenException se o nome de usuário já existir (inclusive em corrida entre requisições)

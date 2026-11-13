@@ -8,14 +8,17 @@ use App\Task\Domain\Repository\TaskRepositoryInterface;
 
 final class GetTaskService
 {
-    public function __construct(private readonly TaskRepositoryInterface $tasks)
-    {
+    public function __construct(
+        private readonly TaskRepositoryInterface $tasks,
+        private readonly TaskOutputFactory $outputs,
+    ) {
     }
 
     public function execute(int $taskId, int $authenticatedUserId): TaskOutput
     {
-        $task = $this->tasks->findOwnedById($taskId, $authenticatedUserId) ?? throw new TaskNotFoundException();
+        // Quem criou e quem é o responsável enxergam a tarefa.
+        $task = $this->tasks->findAccessibleById($taskId, $authenticatedUserId) ?? throw new TaskNotFoundException();
 
-        return TaskOutput::fromTask($task);
+        return $this->outputs->one($task);
     }
 }
