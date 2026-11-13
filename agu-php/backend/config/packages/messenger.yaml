@@ -1,0 +1,50 @@
+framework:
+    messenger:
+        # Mensagens que falham todas as tentativas vão para esta fila, para serem vistas e reprocessadas:
+        #   php bin/console messenger:failed:show   |   messenger:failed:retry
+        failure_transport: failed
+
+        buses:
+            messenger.bus.default:
+                middleware:
+                    # O worker fica horas rodando: confere a conexão com o MySQL antes de cada mensagem.
+                    - doctrine_ping_connection
+
+        transports:
+            # Eventos da aplicação, processados fora da requisição pelo worker (serviço `worker` do compose).
+            # O DSN (MESSENGER_TRANSPORT_DSN) aponta para o RabbitMQ. As mensagens trafegam em JSON, legível
+            # por qualquer outro serviço que um dia consuma a mesma fila.
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: messenger.transport.symfony_serializer
+                options:
+                    exchange:
+                        name: taskflow.events
+                    queues:
+                        taskflow.notifications: ~
+                # Tenta 3 vezes, esperando 1 s, 2 s e 4 s, antes de desistir e mandar para a fila de falhas.
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000
+                    multiplier: 2
+
+            failed:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: messenger.transport.symfony_serializer
+                options:
+                    exchange:
+                        name: taskflow.failed
+                    queues:
+                        taskflow.failed: ~
+
+        # Para onde vai cada evento. Um evento novo precisa de uma linha aqui.
+        routing:
+            'App\Task\Domain\Event\TaskAssigned': async
+
+# Nos testes não há RabbitMQ: as mensagens ficam em memória, e nada é consumido.
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'
+                failed: 'in-memory://'

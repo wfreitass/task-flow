@@ -19,6 +19,11 @@ services:
             - '../src/*/Infrastructure/Persistence/Doctrine/Type/'
             - '../src/Kernel.php'
 
+    # Serviço de e-mail: o remetente vem de MAIL_FROM ("Nome <endereco>"); o servidor, de MAILER_DSN.
+    App\Shared\Infrastructure\Email\SymfonyMailerEmailSender:
+        arguments:
+            $from: '%env(MAIL_FROM)%'
+
     # Serviço de cache: usa o pool com tags definido em config/packages/cache.yaml.
     App\Shared\Infrastructure\Cache\TaggedPoolCache:
         arguments:
@@ -38,6 +43,8 @@ services:
     App\Shared\Application\Port\TransactionRunnerInterface: '@App\Shared\Infrastructure\Persistence\DoctrineTransactionRunner'
     App\Shared\Application\Port\FileStorageInterface: '@App\Shared\Infrastructure\Storage\FileUploader'
     App\Shared\Application\Port\CacheInterface: '@App\Shared\Infrastructure\Cache\TaggedPoolCache'
+    App\Shared\Application\Port\EmailSenderInterface: '@App\Shared\Infrastructure\Email\SymfonyMailerEmailSender'
+    App\Shared\Application\Port\EventPublisherInterface: '@App\Shared\Infrastructure\Messaging\MessengerEventPublisher'
     App\Shared\Application\Port\MimeTypeDetectorInterface: '@App\Shared\Infrastructure\Storage\FinfoMimeTypeDetector'
 
     # O repositório de tarefas é o decorator com cache, que envolve o repositório Doctrine.
@@ -54,5 +61,6 @@ services:
     App\User\Domain\Repository\UserRepositoryInterface: '@App\User\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
     # O contexto Task consulta usuários por esta porta; quem a implementa é o contexto User.
     App\Task\Application\Port\UserDirectoryInterface: '@App\User\Infrastructure\Directory\UserDirectory'
+    App\Task\Application\Port\UserContactInterface: '@App\User\Infrastructure\Directory\UserContactDirectory'
     App\User\Application\Port\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
     App\User\Application\Port\TokenIssuerInterface: '@App\User\Infrastructure\Security\LexikTokenIssuer'

@@ -5,6 +5,7 @@ namespace App\Tests\Unit\Task\Application;
 use App\Shared\Application\DTO\IncomingFile;
 use App\Shared\Application\DTO\StoredFile;
 use App\Shared\Application\Port\ClockInterface;
+use App\Shared\Application\Port\EventPublisherInterface;
 use App\Shared\Application\Port\FileStorageInterface;
 use App\Shared\Application\Port\MimeTypeDetectorInterface;
 use App\Shared\Application\Port\TransactionRunnerInterface;
@@ -30,6 +31,7 @@ final class CreateTaskServiceTest extends TestCase
     private object $transactions;
     private InMemoryTaskAttachmentRepository $attachments;
     private object $storage;
+    private object $events;
 
     protected function setUp(): void
     {
@@ -83,6 +85,16 @@ final class CreateTaskServiceTest extends TestCase
             }
         };
 
+        $this->events = new class implements EventPublisherInterface {
+            /** @var list<object> */
+            public array $published = [];
+
+            public function publish(object $event): void
+            {
+                $this->published[] = $event;
+            }
+        };
+
         // Dublê: todo id de usuário existe e está ativo.
         $directory = new class implements UserDirectoryInterface {
             public function findActiveById(int $id): ?DirectoryUser
@@ -96,7 +108,7 @@ final class CreateTaskServiceTest extends TestCase
             }
         };
 
-        $this->service = new CreateTaskService($this->tasks, $this->history, $clock, $this->transactions, $this->attachments, $this->storage, $detector, $directory, new TaskOutputFactory($directory));
+        $this->service = new CreateTaskService($this->tasks, $this->history, $clock, $this->transactions, $this->attachments, $this->storage, $detector, $directory, new TaskOutputFactory($directory), $this->events);
     }
 
     public function testCreatesTaskForAuthenticatedUserAndRecordsHistory(): void

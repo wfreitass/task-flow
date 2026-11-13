@@ -1,0 +1,11 @@
+framework:
+    mailer:
+        # Servidor de e-mail (MAILER_DSN). No desenvolvimento é o Mailpit do docker-compose, que captura os e-mails
+        # sem enviá-los de verdade e os mostra em http://localhost:8025.
+        dsn: '%env(MAILER_DSN)%'
+
+# Nos testes nenhum e-mail é enviado.
+when@test:
+    framework:
+        mailer:
+            dsn: 'null://null'

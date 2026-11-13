@@ -3,12 +3,14 @@
 namespace App\Task\Application\Service;
 
 use App\Shared\Application\Port\ClockInterface;
+use App\Shared\Application\Port\EventPublisherInterface;
 use App\Shared\Application\Port\TransactionRunnerInterface;
 use App\Task\Application\DTO\TaskOutput;
 use App\Task\Application\DTO\UpdateTaskInput;
 use App\Task\Application\Port\UserDirectoryInterface;
 use App\Task\Domain\Entity\TaskHistory;
 use App\Task\Domain\Enum\TaskHistoryAction;
+use App\Task\Domain\Event\TaskAssigned;
 use App\Task\Domain\Exception\InvalidAssigneeException;
 use App\Task\Domain\Exception\TaskNotFoundException;
 use App\Task\Domain\Repository\TaskHistoryRepositoryInterface;
@@ -23,6 +25,7 @@ final class UpdateTaskService
         private readonly TransactionRunnerInterface $transactions,
         private readonly UserDirectoryInterface $directory,
         private readonly TaskOutputFactory $outputs,
+        private readonly EventPublisherInterface $events,
     ) {
     }
 
@@ -63,6 +66,12 @@ final class UpdateTaskService
             }
             if ([] !== $assignment['new']) {
                 $this->history->add(TaskHistory::record($task, $authenticatedUserId, TaskHistoryAction::Assigned, $assignment['old'], $assignment['new'], $now));
+
+                // Avisa o novo responsável (de forma assíncrona, depois do commit). Tirar o responsável, ou
+                // atribuir a si mesmo, não gera aviso.
+                if (null !== $task->assignedTo() && $task->assignedTo() !== $authenticatedUserId) {
+                    $this->events->publish(new TaskAssigned((int) $task->id(), $task->title(), $task->assignedTo(), $authenticatedUserId, $now->format(\DATE_ATOM)));
+                }
             }
 
             return $this->outputs->one($task);

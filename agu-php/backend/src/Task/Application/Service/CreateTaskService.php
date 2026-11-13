@@ -3,6 +3,7 @@
 namespace App\Task\Application\Service;
 
 use App\Shared\Application\Port\ClockInterface;
+use App\Shared\Application\Port\EventPublisherInterface;
 use App\Shared\Application\Port\FileStorageInterface;
 use App\Shared\Application\Port\MimeTypeDetectorInterface;
 use App\Shared\Application\Port\TransactionRunnerInterface;
@@ -14,6 +15,7 @@ use App\Task\Domain\Entity\Task;
 use App\Task\Domain\Entity\TaskAttachment;
 use App\Task\Domain\Entity\TaskHistory;
 use App\Task\Domain\Enum\TaskHistoryAction;
+use App\Task\Domain\Event\TaskAssigned;
 use App\Task\Domain\Exception\InvalidAssigneeException;
 use App\Task\Domain\Repository\TaskAttachmentRepositoryInterface;
 use App\Task\Domain\Repository\TaskHistoryRepositoryInterface;
@@ -31,6 +33,7 @@ final class CreateTaskService
         private readonly MimeTypeDetectorInterface $mimeTypes,
         private readonly UserDirectoryInterface $directory,
         private readonly TaskOutputFactory $outputs,
+        private readonly EventPublisherInterface $events,
     ) {
     }
 
@@ -111,6 +114,11 @@ final class CreateTaskService
                         $now,
                     ));
                     $outputs[] = AttachmentOutput::fromAttachment($attachment);
+                }
+
+                // Avisa o responsável (de forma assíncrona, depois do commit). Quem atribui a si mesmo não é avisado.
+                if (null !== $task->assignedTo() && $task->assignedTo() !== $authenticatedUserId) {
+                    $this->events->publish(new TaskAssigned((int) $task->id(), $task->title(), $task->assignedTo(), $authenticatedUserId, $now->format(\DATE_ATOM)));
                 }
 
                 return $this->outputs->one($task, $outputs);
