@@ -12,17 +12,13 @@ security:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
 
-    login:
-      pattern: ^/api/login
-      stateless: true
-      provider: app_user_provider
-      json_login:
-        check_path: /api/login
-        username_path: username
-        password_path: password
-        success_handler: lexik_jwt_authentication.handler.authentication_success
-        failure_handler: lexik_jwt_authentication.handler.authentication_failure
+    # Cadastro e login: públicos, e ignoram qualquer token enviado.
+    # O login é um caso de uso (AuthenticateUserService); o JWT é emitido pelo LexikJWTAuthenticationBundle.
+    public:
+      pattern: ^/api/(login|register)$
+      security: false
 
+    # Demais rotas da API: exigem JWT válido (Authorization: Bearer <token>).
     api:
       pattern: ^/api
       stateless: true
@@ -30,5 +26,4 @@ security:
       jwt: ~
 
   access_control:
-    - { path: ^/api/login, roles: PUBLIC_ACCESS }
     - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

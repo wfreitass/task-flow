@@ -44,7 +44,7 @@ final class User
             throw InvalidUserException::invalidUsername();
         }
 
-        $email = trim($email);
+        $email = mb_strtolower(trim($email));
         if (false === filter_var($email, \FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 180) {
             throw InvalidUserException::invalidEmail();
         }

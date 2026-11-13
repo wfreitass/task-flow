@@ -2,7 +2,9 @@
 
 namespace App\Shared\Presentation\Http;
 
+use App\Shared\Domain\Exception\ConflictException;
 use App\Shared\Domain\Exception\DomainException;
+use App\Shared\Domain\Exception\UnauthorizedException;
 use App\Shared\Presentation\Http\Exception\MalformedRequestException;
 use App\Shared\Presentation\Http\Exception\ValidationFailedException;
 use Psr\Log\LoggerInterface;
@@ -34,6 +36,8 @@ final class ExceptionListener
         [$status, $code, $message, $details] = match (true) {
             $exception instanceof MalformedRequestException => [Response::HTTP_BAD_REQUEST, 'MALFORMED_REQUEST', 'O corpo da requisição não é um JSON válido.', []],
             $exception instanceof ValidationFailedException => [Response::HTTP_UNPROCESSABLE_ENTITY, 'VALIDATION_FAILED', 'Dados inválidos.', $this->violations($exception)],
+            $exception instanceof ConflictException => [Response::HTTP_CONFLICT, $exception->errorCode(), $exception->getMessage(), $exception->details()],
+            $exception instanceof UnauthorizedException => [Response::HTTP_UNAUTHORIZED, $exception->errorCode(), $exception->getMessage(), $exception->details()],
             $exception instanceof DomainException => [Response::HTTP_UNPROCESSABLE_ENTITY, $exception->errorCode(), $exception->getMessage(), $exception->details()],
             $exception instanceof AuthenticationException => [Response::HTTP_UNAUTHORIZED, 'UNAUTHENTICATED', 'Autenticação necessária.', []],
             $exception instanceof AccessDeniedException => [Response::HTTP_FORBIDDEN, 'FORBIDDEN', 'Acesso negado.', []],
@@ -59,7 +63,8 @@ final class ExceptionListener
     {
         $details = [];
         foreach ($exception->violations as $violation) {
-            $details[$violation->getPropertyPath()] = (string) $violation->getMessage();
+            // Uma mensagem por campo: a primeira violação (obrigatório, depois tipo, depois tamanho) é a mais relevante.
+            $details[$violation->getPropertyPath()] ??= (string) $violation->getMessage();
         }
 
         return $details;

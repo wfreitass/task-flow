@@ -23,3 +23,5 @@ services:
     App\Task\Application\Port\CurrentUserIdProviderInterface: '@App\User\Infrastructure\Security\AuthenticatedUserIdProvider'
 
     App\User\Domain\Repository\UserRepositoryInterface: '@App\User\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
+    App\User\Application\Port\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
+    App\User\Application\Port\TokenIssuerInterface: '@App\User\Infrastructure\Security\LexikTokenIssuer'
