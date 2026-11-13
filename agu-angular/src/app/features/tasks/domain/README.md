@@ -3,8 +3,8 @@
 TypeScript puro para entidades, invariantes, value objects, políticas e contratos
 de repositório. Não importar Angular, RxJS, browser, HTTP ou DTOs externos.
 
-Criar `entities/` e `repositories/` no primeiro fluxo. Criar `value-objects/` e
-`services/` somente quando regras confirmadas justificarem sua existência.
-Os exemplos de status e prioridade do `AGENTS.md` não definem o produto.
+`entities/` contém Task e suas invariantes; `repositories/` contém TaskRepository.
+`value-objects/` define os três status da demonstração aprovados pelo usuário.
+Não há regras adicionais de workflow ou prioridade.
 
-As regras serão testadas sem `TestBed`. Consulte a [arquitetura](../../../../../docs/ARQUITETURA.md).
+Testes desta etapa foram adiados por solicitação do usuário. Consulte a [arquitetura](../../../../../docs/01-ARQUITETURA.md).

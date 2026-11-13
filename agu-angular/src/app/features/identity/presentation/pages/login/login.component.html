@@ -11,41 +11,29 @@
       <p class="form-description">Entre na sua conta e dê o próximo passo<br class="desktop-break"> em direção a um dia mais organizado.</p>
 
       <form [formGroup]="form" (ngSubmit)="login()" (input)="store.clearError()" [attr.aria-busy]="store.loading()" novalidate>
-        <mat-form-field appearance="outline">
-          <mat-label>Usuário</mat-label>
-          <input matInput id="username" name="username" formControlName="username" autocomplete="username" autocapitalize="none" spellcheck="false" [readonly]="store.loading()" required>
-          @if (form.controls.username.hasError('required')) {
-            <mat-error>Informe seu usuário.</mat-error>
-          }
-        </mat-form-field>
+        <app-ui-form-field
+          label="Usuário" name="username" inputId="username"
+          [control]="form.controls.username" autocomplete="username"
+          autocapitalize="none" [spellcheck]="false" subscriptSizing="fixed"
+          [readonly]="store.loading()" [submitted]="submitAttempted()"
+          requiredMessage="Informe seu usuário."
+        />
 
-        <mat-form-field appearance="outline">
-          <mat-label>Senha</mat-label>
-          <input matInput id="password" name="password" formControlName="password" autocomplete="current-password" [type]="passwordHidden() ? 'password' : 'text'" [readonly]="store.loading()" required>
-          <button mat-icon-button matSuffix type="button" [attr.aria-label]="passwordHidden() ? 'Mostrar senha' : 'Ocultar senha'" [attr.aria-pressed]="!passwordHidden()" (click)="togglePasswordVisibility()" [disabled]="store.loading()">
-            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
-              @if (!passwordHidden()) { <path d="m4 3 16 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/> }
-            </svg>
-          </button>
-          @if (form.controls.password.hasError('required')) {
-            <mat-error>Informe sua senha.</mat-error>
-          }
-        </mat-form-field>
+        <app-ui-form-field
+          label="Senha" name="password" inputId="password" type="password"
+          [control]="form.controls.password" autocomplete="current-password"
+          subscriptSizing="fixed" [readonly]="store.loading()"
+          [submitted]="submitAttempted()" requiredMessage="Informe sua senha."
+        />
 
         @if (store.error()) {
           <p class="login-error" role="alert">{{ store.error() }}</p>
         }
 
-        <button mat-flat-button color="primary" class="submit-button" type="submit" [disabled]="store.loading()">
-          @if (store.loading()) {
-            <mat-spinner diameter="18" aria-hidden="true" />
-            <span>Entrando...</span>
-          } @else {
-            <span>Entrar na minha conta</span><span aria-hidden="true">→</span>
-          }
-        </button>
+        <app-ui-form-actions
+          submitLabel="Entrar na minha conta" busyLabel="Entrando..." submitSuffix="→"
+          [busy]="store.loading()" [showCancel]="false" [fullWidth]="true"
+        />
         <span class="sr-only" role="status">{{ store.loading() ? 'Entrando. Aguarde.' : '' }}</span>
       </form>
 

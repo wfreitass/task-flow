@@ -1,0 +1,38 @@
+<div class="tasks-page">
+  <div class="page-top"><span>Área de trabalho <span class="breadcrumb-separator">/</span> <strong>Minhas tarefas</strong></span><span class="demo-label"><i></i> Ambiente de demonstração</span></div>
+  <header class="page-heading">
+    <div><span class="eyebrow">CADA PASSO CONTA</span><h1>Minhas tarefas<span>.</span></h1><p>Um lugar para organizar suas ideias e fazer acontecer.</p></div>
+    <button mat-flat-button color="primary" (click)="openTask()" [disabled]="store.loading() || store.saving() || !!store.error()"><app-ui-icon name="plus" /> Nova tarefa</button>
+  </header>
+
+  <app-task-summary [total]="store.total()" [pending]="store.pending()" [inProgress]="store.inProgress()" [completed]="store.completed()" />
+
+  <div class="workspace-heading"><h2>Seu espaço de trabalho</h2><span>Pequenos passos, grandes conquistas.</span></div>
+  @if (store.error()) {
+    <section class="message error" role="alert"><p>{{ store.error() }}</p><button mat-stroked-button (click)="store.load()">Tentar novamente</button></section>
+  } @else if (store.loading()) {
+    <div class="loading" role="status"><mat-spinner diameter="30" /><span>Preparando seu espaço...</span></div>
+  } @else {
+    @if (store.mutationError() && !formOpen()) { <p class="message error" role="alert">{{ store.mutationError() }}</p> }
+    @if (!store.total()) {
+      <app-tasks-empty-state [busy]="store.saving()" (createRequested)="openTask()" (examplesRequested)="store.addExamples()" />
+    } @else {
+      <div class="workspace-toolbar">
+        <div class="filters"><app-ui-form-field label="Buscar tarefas" name="search" type="search" [control]="search" placeholder="Título ou descrição" /><app-ui-select label="Status" [control]="status" [options]="filterOptions" /></div>
+        <div class="view-switch" role="group" aria-label="Visualização das tarefas">
+          <button mat-button [class.active]="view() === 'kanban'" [attr.aria-pressed]="view() === 'kanban'" (click)="view.set('kanban')"><app-ui-icon name="board" /> Kanban</button>
+          <button mat-button [class.active]="view() === 'table'" [attr.aria-pressed]="view() === 'table'" (click)="view.set('table')"><app-ui-icon name="table" /> Tabela</button>
+        </div>
+      </div>
+      <div class="results-line"><span>{{ store.filteredTasks().length }} de {{ store.total() }} tarefas</span><span>Dados salvos neste navegador</span></div>
+      @if (!store.filteredTasks().length) {
+        <section class="no-results"><app-ui-icon name="search" /><h3>Nenhuma tarefa encontrada</h3><p>Tente outro termo ou remova o filtro de status.</p><button mat-button (click)="clearFilters()">Limpar filtros</button></section>
+      } @else if (view() === 'kanban') {
+        <app-ui-kanban [columns]="columns()" [disabled]="store.saving()" (itemSelected)="selectTask($event)" (itemMoved)="moveTask($event)" />
+      } @else {
+        <app-ui-table [rows]="store.filteredTasks()" [columns]="tableColumns" caption="Lista de tarefas" actionLabel="Editar" (rowAction)="openTask($event)" />
+      }
+    }
+  }
+  <footer class="page-footer">TASK FLOW <span>·</span> Um passo de cada vez.</footer>
+</div>

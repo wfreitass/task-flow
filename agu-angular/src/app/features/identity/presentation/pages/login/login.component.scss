@@ -9,11 +9,8 @@
 h1 { margin: 0 0 12px; color: #1c3028; font-size: 29px; line-height: 1.25; font-weight: 650; letter-spacing: -1px; }
 .form-description { margin: 0 0 29px; color: #778179; font-size: 13px; line-height: 1.75; }
 form { display: flex; flex-direction: column; gap: 8px; }
-mat-form-field { width: 100%; font-size: 14px; }
-.eye-icon { display: block; width: 20px; height: 20px; margin: auto; color: #78847b; }
-.submit-button { width: 100%; min-height: 49px; margin-top: 2px; border-radius: 8px; font-size: 13px; letter-spacing: 0; }
-.submit-button span + span, .submit-button mat-spinner { display: inline-block; margin-left: 14px; vertical-align: middle; }
-.submit-button mat-spinner { margin: 0 9px 0 0; }
+app-ui-form-field { font-size: 14px; }
+app-ui-form-actions { margin-top: 2px; }
 .login-error { margin: 0 0 10px; padding: 12px; border: 1px solid #f1cccc; border-radius: 8px; color: #9b3030; background: #fff3f1; font-size: 12px; line-height: 1.6; }
 .demo-access { margin-top: 26px; padding: 17px; border: 1px dashed #cbd8c7; border-radius: 10px; background: #f5f7f1; }
 .demo-access-heading { display: flex; align-items: center; gap: 7px; color: #38513b; font-size: 12px; }

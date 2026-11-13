@@ -8,5 +8,8 @@ Login de demonstração implementado por camadas:
 - `presentation`: página Material, formulário reativo e store com Signals.
 
 `identity.routes.ts` conecta implementações e caso de uso. O mock não usa HTTP;
-credenciais de demonstração e limitações estão em [LOGIN.md](../../../../docs/LOGIN.md).
+credenciais de demonstração e limitações estão em [02-LOGIN.md](../../../../docs/02-LOGIN.md).
 Cadastro e demais fluxos de identidade continuam pendentes.
+
+O login usa `UiFormFieldComponent` e `UiFormActionsComponent` de `shared/ui`.
+Detalhes: [04 — Login com componentes de UI](../../../../docs/04-LOGIN-COMPONENTES-UI.md).

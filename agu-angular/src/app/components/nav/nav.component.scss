@@ -1,0 +1,13 @@
+:host { display: block; min-width: 0; }
+nav { position: sticky; top: 0; display: flex; flex-direction: column; min-height: 100dvh; padding: 31px 20px 18px; color: #d9e9dc; background: #142e26; }
+.brand { display: flex; align-items: center; gap: 9px; margin-bottom: 54px; padding-left: 6px; color: white; text-decoration: none; font-size: 24px; font-weight: 700; letter-spacing: -1px; }
+.brand-mark { display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid #a7d6a545; border-radius: 9px; color: #c2e3b1; background: #bce7af12; }
+.brand-light { font-weight: 400; }.brand-dot { color: #c0dfa8; }
+.nav-label { padding: 0 12px; color: #718b78; font-size: 8px; letter-spacing: 1.5px; }
+.nav-link { display: flex; align-items: center; gap: 10px; margin-top: 15px; padding: 13px 12px; border: 1px solid transparent; border-radius: 8px; color: #b5c9b5; text-decoration: none; font-size: 11px; }
+.nav-link.active { border-color: #bdd6b218; color: #d1e8ba; background: #bce6a912; }.nav-arrow { margin-left: auto; color: #9abd88; font-size: 18px; }
+.sidebar-bottom { margin-top: auto; padding-top: 70px; }.demo-card { padding: 18px 13px; border: 1px solid #bfd9b319; border-radius: 10px; background: #bce6a906; }.demo-card>span { color: #8aa080; font-size: 7px; letter-spacing: 1.4px; }.demo-card p { color: #adc4a2; font-size: 12px; line-height: 1.9; }.demo-card small { color: #6e8c72; font-size: 8px; }
+.account { display: flex; align-items: center; gap: 9px; margin: 26px 0 12px; padding-top: 22px; border-top: 1px solid #b2d1a818; }.avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: #c7e0b5; background: #91b37422; font-size: 10px; }.account strong,.account div>span { display: block; }.account strong { font-size: 10px; font-weight: 500; }.account div>span { margin-top: 5px; color: #729173; font-size: 8px; }
+.logout { justify-content: flex-start; width: 100%; color: #9bb494 !important; font-size: 10px; letter-spacing: 0; }app-ui-icon { width: 17px; height: 17px; }.logout app-ui-icon { margin-right: 8px; }
+@media (max-width: 900px) { nav { position: static; flex-direction: row; align-items: center; min-height: auto; padding: 15px 20px; gap: 18px; }.brand { margin: 0; font-size: 21px; }.nav-label,.sidebar-bottom,.nav-arrow { display: none; }.nav-link { margin: 0; padding: 10px; }.logout { width: auto; margin-left: auto; } }
+@media (max-width: 500px) { nav { gap: 10px; padding: 13px 16px; }.brand { font-size: 20px; }.brand-mark { display: none; }.nav-link { font-size: 10px; gap: 6px; padding: 9px; }.logout span { display: none; }.logout { min-width: 32px; }.logout app-ui-icon { margin: 0; } }

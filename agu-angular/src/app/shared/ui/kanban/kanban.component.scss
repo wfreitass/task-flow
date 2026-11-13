@@ -1,0 +1,21 @@
+.ui-kanban { overflow-x: auto; padding-bottom: 12px; }
+.ui-kanban .kanban-container { display: flex; align-items: stretch; gap: 18px; width: 100% !important; min-width: 840px; }
+.ui-kanban .kanban-container::after { display: none; }
+.ui-kanban .kanban-board { float: none; flex: 1; min-width: 260px; width: auto !important; border: 1px solid #e1e8e1; border-radius: 12px; background: #eef2ed; }
+.ui-kanban .kanban-board-header { padding: 18px 16px; }
+.ui-kanban .kanban-title-board { display: flex !important; align-items: center; gap: 10px; font-size: 13px; color: #526052; }
+.ui-kanban-column-title::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 9px; border-radius: 50%; background: #8a998b; }
+.ui-kanban-tone-amber .ui-kanban-column-title::before { background: #c69b4d; }
+.ui-kanban-tone-green .ui-kanban-column-title::before { background: #5c966a; }
+.ui-kanban-count { display: grid; place-items: center; min-width: 23px; height: 23px; border-radius: 6px; color: #788676; background: #e2e9e0; font-size: 10px; }
+.ui-kanban .kanban-drag { min-height: 370px; padding: 0 12px 12px; }
+.ui-kanban .kanban-drag:empty::after { content: 'Solte uma tarefa aqui'; display: block; margin-top: 12px; padding: 30px 10px; border: 1px dashed #cbd7c8; border-radius: 8px; text-align: center; color: #8a9785; font-size: 12px; }
+.ui-kanban-card { position: relative; margin-bottom: 12px; padding: 18px; border: 1px solid #e0e8dd; border-radius: 10px; background: white; box-shadow: 0 2px 3px #15361d04; cursor: pointer; overflow-wrap: anywhere; }
+.ui-kanban-card:hover { border-color: #a8bca0; }
+.ui-kanban-card h3 { margin: 0 17px 10px 0; color: #314b35; font-size: 13px; font-weight: 600; line-height: 1.6; }
+.ui-kanban-card p { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 3; -webkit-box-orient: vertical; margin: 0 0 18px; color: #7b8678; font-size: 11px; line-height: 1.8; }
+.ui-kanban-card-footer { display: block; padding-top: 12px; border-top: 1px solid #f0f3ee; color: #83907e; font-size: 10px; }
+.ui-kanban-handle { position: absolute; right: 12px; top: 14px; padding: 4px; color: #93a08d; cursor: grab; touch-action: none; }
+.ui-kanban-card:focus-visible { outline: 3px solid #88a783; outline-offset: 2px; }
+.ui-kanban-help { margin: 12px 0; color: #85917f; font-size: 11px; line-height: 1.7; }
+.ui-kanban-error { padding: 16px; margin-bottom: 16px; border-radius: 8px; color: #9b3030; background: #fff3f1; }

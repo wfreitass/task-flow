@@ -1,5 +1,8 @@
-<nav>
-  <a routerLink="/tasks">Tasks</a>
-  <a routerLink="/task">Add Task</a>
-  <a (click)="logout()">Logout</a>
+<nav aria-label="Navegação principal">
+  <a class="brand" routerLink="/tasks" aria-label="Task Flow, painel de tarefas"><span class="brand-mark"><app-ui-icon name="check" /></span><span>task<span class="brand-light">flow</span><span class="brand-dot">.</span></span></a>
+  <div class="navigation"><span class="nav-label">ÁREA DE TRABALHO</span><a class="nav-link" routerLink="/tasks" routerLinkActive="active"><app-ui-icon name="board" /><span>Minhas tarefas</span><span class="nav-arrow" aria-hidden="true">›</span></a></div>
+  <div class="sidebar-bottom"><div class="demo-card"><span>UM PASSO DE CADA VEZ</span><p>Organize o presente.<br>Abra espaço para o próximo.</p><small>Você está no modo demonstração.</small></div>
+    <div class="account"><span class="avatar">DM</span><div><strong>Conta demonstração</strong><span>Seu espaço pessoal</span></div></div>
+  </div>
+  <button mat-button class="logout" aria-label="Sair da conta" (click)="logout()"><app-ui-icon name="logout" /><span>Sair da conta</span></button>
 </nav>

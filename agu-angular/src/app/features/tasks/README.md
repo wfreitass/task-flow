@@ -7,12 +7,15 @@ Contexto de gerenciamento de tarefas, organizado em quatro camadas:
 - `infrastructure`: HTTP, DTOs externos, mappers e DI.
 - `presentation`: páginas standalone, componentes, formulários e stores com Signals.
 
-O primeiro fluxo previsto é a listagem, após a confirmação do contrato da API.
-`tasks.routes.ts` será criado junto da implementação, com carregamento lazy e
-providers que conectem contratos, implementações e casos de uso.
+O painel já usa listagem, criação, edição, exclusão e movimentação mockadas.
+`tasks.routes.ts` fornece lazy loading e a composição dos casos de uso pelo
+token `TASK_REPOSITORY`, ligado a `MockTaskRepository` na infraestrutura.
 
-Esta etapa contém somente orientações. Não copiar campos, status ou endpoints
-ilustrativos do `AGENTS.md` como se fossem contratos confirmados.
+A demonstração usa localStorage e as colunas aprovadas A fazer, Em andamento e
+Concluídas. Não copiar esse snapshot como se fosse um contrato confirmado da API.
+Os componentes genéricos de UI ficam em `shared/ui`; o estado vazio é da feature.
 
-Consulte a [arquitetura](../../../../docs/ARQUITETURA.md) e o
-[acompanhamento](../../../../docs/FLUXO-DE-TRABALHO.md).
+Detalhes: [03 — Painel de tarefas](../../../../docs/03-PAINEL-DE-TAREFAS.md).
+
+Consulte a [arquitetura](../../../../docs/01-ARQUITETURA.md) e o
+[acompanhamento](../../../../docs/00-FLUXO-DE-TRABALHO.md).
