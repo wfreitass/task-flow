@@ -1,0 +1,21 @@
+# Serviços expostos apenas ao container de testes: os testes os obtêm diretamente,
+# e serviços privados sem outros usuários seriam removidos na compilação.
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    App\Task\Application\Service\CreateTaskService: ~
+
+    App\Shared\Application\Port\TransactionRunnerInterface:
+        alias: App\Shared\Infrastructure\Persistence\DoctrineTransactionRunner
+
+    App\User\Domain\Repository\UserRepositoryInterface:
+        alias: App\User\Infrastructure\Persistence\Doctrine\DoctrineUserRepository
+
+    Doctrine\DBAL\Connection:
+        alias: doctrine.dbal.default_connection
+
+    Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface:
+        alias: lexik_jwt_authentication.jwt_manager

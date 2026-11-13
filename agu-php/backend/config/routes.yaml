@@ -1,29 +1,10 @@
-auth_login:
-  path: /api/login
-  controller: App\Controller\AuthController::login
-  methods: POST
+# Cada contexto com endpoints HTTP registra aqui o diretório dos seus controllers.
+task_controllers:
+    resource: '../src/Task/Presentation/Http/Controller/'
+    type: attribute
 
-auth_register:
-  path: /api/register
-  controller: App\Controller\AuthController::register
-  methods: POST
-
-get_tasks:
-  path: /api/tasks
-  controller: App\Controller\TaskController::getTasks
-  methods: GET
-
-create_task:
-  path: /api/tasks
-  controller: App\Controller\TaskController::createTask
-  methods: POST
-
-update_task:
-  path: /api/tasks/{id}
-  controller: App\Controller\TaskController::updateTask
-  methods: PUT
-
-delete_task:
-  path: /api/tasks/{id}
-  controller: App\Controller\TaskController::deleteTask
-  methods: DELETE
+# A rota precisa existir para o roteador casá-la; quem processa o login é o firewall `login`
+# (json_login em config/packages/security.yaml), então não há controller.
+api_login:
+    path: /api/login
+    methods: [POST]
