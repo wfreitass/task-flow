@@ -14,9 +14,9 @@ let nextFieldId = 0;
     <mat-form-field appearance="outline" [subscriptSizing]="subscriptSizing">
       <mat-label>{{ label }}</mat-label>
       @if (multiline) {
-        <textarea matInput [id]="inputId || defaultId" [formControl]="control" [rows]="rows" [placeholder]="placeholder" [readonly]="readonly" [attr.maxlength]="maxLength" [attr.name]="name" [attr.spellcheck]="spellcheck" [attr.autocapitalize]="autocapitalize"></textarea>
+        <textarea matInput [id]="inputId || defaultId" [formControl]="control" [rows]="rows" [placeholder]="placeholder" [readonly]="readonly" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.name]="name" [attr.spellcheck]="spellcheck" [attr.autocapitalize]="autocapitalize"></textarea>
       } @else {
-        <input matInput [id]="inputId || defaultId" [formControl]="control" [type]="type === 'password' && !passwordHidden() ? 'text' : type" [placeholder]="placeholder" [readonly]="readonly" [attr.maxlength]="maxLength" [attr.name]="name" [attr.autocomplete]="autocomplete" [attr.spellcheck]="spellcheck" [attr.autocapitalize]="autocapitalize">
+        <input matInput [id]="inputId || defaultId" [formControl]="control" [type]="type === 'password' && !passwordHidden() ? 'text' : type" [placeholder]="placeholder" [readonly]="readonly" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.name]="name" [attr.autocomplete]="autocomplete" [attr.spellcheck]="spellcheck" [attr.autocapitalize]="autocapitalize">
       }
       @if (type === 'password' && !multiline) {
         <button mat-icon-button matSuffix type="button" [attr.aria-label]="passwordHidden() ? 'Mostrar senha' : 'Ocultar senha'" [attr.aria-pressed]="!passwordHidden()" [attr.aria-controls]="inputId || defaultId" [disabled]="readonly || control.disabled" (click)="togglePasswordVisibility()">
@@ -28,8 +28,14 @@ let nextFieldId = 0;
         </button>
       }
       @if (hint) { <mat-hint>{{ hint }}</mat-hint> }
-      @if (control.hasError('required') || control.hasError('pattern')) {
+      @if (control.hasError('required')) {
         <mat-error>{{ requiredMessage }}</mat-error>
+      } @else if (control.hasError('email')) {
+        <mat-error>{{ emailMessage }}</mat-error>
+      } @else if (control.hasError('minlength')) {
+        <mat-error>{{ minLengthMessage }}</mat-error>
+      } @else if (control.hasError('pattern')) {
+        <mat-error>{{ patternMessage || requiredMessage }}</mat-error>
       } @else if (control.hasError('maxlength')) {
         <mat-error>Use no máximo {{ maxLength }} caracteres.</mat-error>
       }
@@ -44,10 +50,11 @@ export class UiFormFieldComponent {
   @Input() name = '';
   @Input() inputId = '';
   @Input() placeholder = '';
-  @Input() type: 'text' | 'email' | 'password' | 'search' = 'text';
+  @Input() type: 'text' | 'email' | 'password' | 'search' | 'date' = 'text';
   @Input() multiline = false;
   @Input() rows = 4;
   @Input() readonly = false;
+  @Input() minLength: number | null = null;
   @Input() maxLength: number | null = null;
   @Input() hint = '';
   @Input() autocomplete = 'off';
@@ -55,6 +62,9 @@ export class UiFormFieldComponent {
   @Input() spellcheck: boolean | null = null;
   @Input() subscriptSizing: 'dynamic' | 'fixed' = 'dynamic';
   @Input() requiredMessage = 'Preencha este campo.';
+  @Input() emailMessage = 'Informe um e-mail válido.';
+  @Input() minLengthMessage = 'O valor informado é muito curto.';
+  @Input() patternMessage = '';
   // A mudança deste input atualiza controles OnPush após o submit do formulário pai.
   @Input() submitted = false;
 

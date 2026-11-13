@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
-export type UiIconName = 'check' | 'board' | 'table' | 'plus' | 'search' | 'logout' | 'close' | 'edit' | 'trash' | 'arrow-left';
+export type UiIconName = 'check' | 'board' | 'table' | 'plus' | 'search' | 'logout' | 'close' | 'edit' | 'trash' | 'arrow-left' | 'users';
 const ICON_PATHS: Record<UiIconName, string> = {
   check: 'm5 12 4 4L19 6',
   board: 'M4 4h16v16H4zM9 4v16M15 4v16M6.5 8h0M11.5 11h0M17.5 7h0',
+  users: 'M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
   table: 'M4 4h16v16H4zM4 9h16M4 14h16M10 9v11',
   plus: 'M12 5v14M5 12h14',
   search: 'M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Zm5-1.5L21 21',

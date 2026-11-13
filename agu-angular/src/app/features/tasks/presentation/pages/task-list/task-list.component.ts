@@ -12,12 +12,12 @@ import { UiKanbanColumn, UiKanbanMove } from '../../../../../shared/ui/kanban/ka
 import { UiSelectComponent } from '../../../../../shared/ui/select/select.component';
 import { UiTableColumn, UiTableComponent } from '../../../../../shared/ui/table/table.component';
 import { Task } from '../../../domain/entities/task.entity';
-import { isTaskStatus, TaskStatus } from '../../../domain/value-objects/task-status.vo';
+import { TaskStatus } from '../../../domain/value-objects/task-status.vo';
 import { TaskFormDialogComponent } from '../../components/task-form-dialog/task-form-dialog.component';
 import { TaskSummaryComponent } from '../../components/task-summary/task-summary.component';
 import { TasksEmptyStateComponent } from '../../components/tasks-empty-state/tasks-empty-state.component';
 import { TaskListStore } from '../../state/task-list.store';
-import { TASK_STATUS_LABELS, TASK_STATUS_OPTIONS } from '../../task-presentation';
+import { TASK_BOARD_OPTIONS, TASK_STATUS_LABELS, TaskBoardStatus, taskMatchesBoardStatus, toApiStatus } from '../../task-presentation';
 
 @Component({
   selector: 'app-task-list',
@@ -39,16 +39,17 @@ export class TaskListComponent implements OnInit {
   readonly view = signal<'kanban' | 'table'>('kanban');
   readonly formOpen = signal(false);
   readonly search = new FormControl('', { nonNullable: true });
-  readonly status = new FormControl<TaskStatus | 'all'>('all', { nonNullable: true });
-  readonly filterOptions = [{ value: 'all' as const, label: 'Todos os status' }, ...TASK_STATUS_OPTIONS];
+  readonly status = new FormControl<TaskBoardStatus | 'all'>('all', { nonNullable: true });
+  readonly filterOptions = [{ value: 'all' as const, label: 'Todos os status' }, ...TASK_BOARD_OPTIONS];
   readonly tableColumns: readonly UiTableColumn<Task>[] = [
     { key: 'title', label: 'Tarefa', value: task => task.title },
     { key: 'description', label: 'Descrição', value: task => task.description || 'Sem descrição' },
+    { key: 'assignee', label: 'Responsável', value: task => task.assignee?.username ?? 'Sem responsável' },
     { key: 'status', label: 'Status', value: task => TASK_STATUS_LABELS[task.status] },
   ];
-  readonly columns = computed<readonly UiKanbanColumn[]>(() => TASK_STATUS_OPTIONS.map(option => ({
+  readonly columns = computed<readonly UiKanbanColumn[]>(() => TASK_BOARD_OPTIONS.map(option => ({
     id: option.value, title: option.label, tone: option.tone,
-    items: this.store.filteredTasks().filter(task => task.status === option.value),
+    items: this.store.filteredTasks().filter(task => taskMatchesBoardStatus(task, option.value)),
   })));
 
   constructor() {
@@ -84,6 +85,13 @@ export class TaskListComponent implements OnInit {
   }
 
   moveTask(event: UiKanbanMove): void {
-    if (isTaskStatus(event.columnId)) void this.store.move(event.itemId, event.columnId, event.beforeId);
+    if (TASK_BOARD_OPTIONS.some(option => option.value === event.columnId)) {
+      const task = this.store.tasks().find(item => item.id === event.itemId);
+      if (task && taskMatchesBoardStatus(task, event.columnId as TaskBoardStatus)) {
+        void this.store.load();
+        return;
+      }
+      void this.store.move(event.itemId, toApiStatus(event.columnId as TaskBoardStatus), event.beforeId);
+    }
   }
 }

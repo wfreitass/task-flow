@@ -15,7 +15,7 @@
   } @else {
     @if (store.mutationError() && !formOpen()) { <p class="message error" role="alert">{{ store.mutationError() }}</p> }
     @if (!store.total()) {
-      <app-tasks-empty-state [busy]="store.saving()" (createRequested)="openTask()" (examplesRequested)="store.addExamples()" />
+      <app-tasks-empty-state [busy]="store.saving()" (createRequested)="openTask()" />
     } @else {
       <div class="workspace-toolbar">
         <div class="filters"><app-ui-form-field label="Buscar tarefas" name="search" type="search" [control]="search" placeholder="Título ou descrição" /><app-ui-select label="Status" [control]="status" [options]="filterOptions" /></div>

@@ -1,4 +1,4 @@
-export const TASK_STATUSES = ['pending', 'in_progress', 'completed'] as const;
+export const TASK_STATUSES = ['backlog', 'todo', 'in_progress', 'blocked', 'done', 'canceled'] as const;
 export type TaskStatus = typeof TASK_STATUSES[number];
 
 export function isTaskStatus(value: unknown): value is TaskStatus {

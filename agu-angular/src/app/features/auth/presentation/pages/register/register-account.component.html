@@ -1,0 +1,81 @@
+<main class="register-page">
+  <app-login-brand />
+
+  <section class="form-panel" aria-labelledby="register-title">
+    <div class="register-content">
+      <span class="security-badge"><span></span> Acesso seguro</span>
+      <div class="welcome-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <h1 id="register-title">Crie sua conta</h1>
+      <p class="form-description">Organize suas tarefas com mais clareza, todos os dias.</p>
+
+      @if (store.registered()) {
+        <div class="register-success" role="status">
+          <span class="success-icon" aria-hidden="true">✓</span>
+          <h2>Conta criada com sucesso</h2>
+          <p>Agora você já pode entrar com seu e-mail e senha.</p>
+          <a class="login-button" mat-flat-button color="primary" routerLink="/login">Ir para o login</a>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="register()" (input)="store.clearError()" [attr.aria-busy]="store.loading()" novalidate>
+          <app-ui-form-field
+            label="Nome de usuário" name="username" inputId="register-username"
+            [control]="form.controls.username" autocomplete="username"
+            autocapitalize="none" [spellcheck]="false" subscriptSizing="fixed"
+            [minLength]="3" [maxLength]="50" [submitted]="submitAttempted()"
+            [readonly]="store.loading()"
+            requiredMessage="Informe seu nome de usuário."
+            minLengthMessage="Use pelo menos 3 caracteres."
+          />
+
+          <app-ui-form-field
+            label="E-mail" name="email" inputId="register-email" type="email"
+            [control]="form.controls.email" autocomplete="email"
+            autocapitalize="none" [spellcheck]="false" subscriptSizing="fixed"
+            [maxLength]="180" [submitted]="submitAttempted()"
+            [readonly]="store.loading()"
+            requiredMessage="Informe seu e-mail."
+            emailMessage="Informe um endereço de e-mail válido."
+          />
+
+          <app-ui-form-field
+            label="Senha" name="password" inputId="register-password" type="password"
+            [control]="form.controls.password" autocomplete="new-password"
+            subscriptSizing="fixed" [minLength]="8" [maxLength]="72"
+            [readonly]="store.loading()" [submitted]="submitAttempted()"
+            requiredMessage="Informe uma senha."
+            minLengthMessage="A senha deve ter pelo menos 8 caracteres."
+          />
+
+          <app-ui-form-field
+            label="Confirme sua senha" name="confirmPassword" inputId="register-confirm-password" type="password"
+            [control]="form.controls.confirmPassword" autocomplete="new-password"
+            subscriptSizing="fixed" [maxLength]="72"
+            [readonly]="store.loading()" [submitted]="submitAttempted()"
+            requiredMessage="Confirme sua senha."
+          />
+
+          @if (submitAttempted() && form.controls.confirmPassword.value && form.hasError('passwordMismatch')) {
+            <p class="field-error" role="alert">As senhas não coincidem.</p>
+          }
+
+          @if (store.error()) {
+            <p class="register-error" role="alert">{{ store.error() }}</p>
+          }
+
+          <app-ui-form-actions
+            submitLabel="Criar conta" busyLabel="Criando conta..."
+            [busy]="store.loading()" [showCancel]="false" [fullWidth]="true"
+          />
+          <span class="sr-only" role="status">{{ store.loading() ? 'Criando sua conta. Aguarde.' : '' }}</span>
+        </form>
+      }
+
+      @if (!store.registered()) {
+        <p class="login-link">Já tem uma conta? <a routerLink="/login">Entrar</a></p>
+      }
+    </div>
+    <footer class="form-footer">TASK FLOW <span aria-hidden="true">·</span> Seu dia, com mais clareza.</footer>
+  </section>
+</main>

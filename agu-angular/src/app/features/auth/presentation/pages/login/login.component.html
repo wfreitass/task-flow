@@ -1,0 +1,45 @@
+<main class="login-page">
+  <app-login-brand />
+
+  <section class="form-panel" aria-labelledby="login-title">
+    <div class="login-content">
+      <span class="demo-badge"><span></span> Acesso seguro</span>
+      <div class="welcome-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 8l4 4-4 4M14 12H3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1 id="login-title">Bem-vindo de volta</h1>
+      <p class="form-description">Entre na sua conta e dê o próximo passo<br class="desktop-break"> em direção a um dia mais organizado.</p>
+
+      <form [formGroup]="form" (ngSubmit)="login()" (input)="store.clearError()" [attr.aria-busy]="store.loading()" novalidate>
+        <app-ui-form-field
+          label="E-mail" name="email" inputId="email" type="email"
+          [control]="form.controls.email" autocomplete="email"
+          autocapitalize="none" [spellcheck]="false" subscriptSizing="fixed"
+          [readonly]="store.loading()" [submitted]="submitAttempted()"
+          requiredMessage="Informe seu e-mail."
+          emailMessage="Informe um endereço de e-mail válido."
+        />
+
+        <app-ui-form-field
+          label="Senha" name="password" inputId="password" type="password"
+          [control]="form.controls.password" autocomplete="current-password"
+          subscriptSizing="fixed" [readonly]="store.loading()"
+          [submitted]="submitAttempted()" requiredMessage="Informe sua senha."
+        />
+
+        @if (store.error()) {
+          <p class="login-error" role="alert">{{ store.error() }}</p>
+        }
+
+        <app-ui-form-actions
+          submitLabel="Entrar na minha conta" busyLabel="Entrando..." submitSuffix="→"
+          [busy]="store.loading()" [showCancel]="false" [fullWidth]="true"
+        />
+        <span class="sr-only" role="status">{{ store.loading() ? 'Entrando. Aguarde.' : '' }}</span>
+      </form>
+
+      <p class="register-link">Ainda não tem uma conta? <a routerLink="/register">Criar conta</a></p>
+    </div>
+    <footer class="form-footer">TASK FLOW <span aria-hidden="true">·</span> Seu dia, com mais clareza.</footer>
+  </section>
+</main>

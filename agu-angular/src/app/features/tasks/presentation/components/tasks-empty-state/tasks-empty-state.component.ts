@@ -16,7 +16,6 @@ import { UiIconComponent } from '../../../../../shared/ui/icon/icon.component';
       <h2 id="empty-title">Seu próximo passo começa aqui</h2>
       <p>Você ainda não possui tarefas cadastradas.<br>Crie a primeira e organize o que vem pela frente.</p>
       <button mat-flat-button color="primary" (click)="createRequested.emit()" [disabled]="busy"><app-ui-icon name="plus" /> Criar primeira tarefa</button>
-      <button mat-button class="examples" (click)="examplesRequested.emit()" [disabled]="busy">{{ busy ? 'Carregando...' : 'Prefiro explorar com tarefas de exemplo' }}</button>
     </section>
   `,
   styleUrl: './tasks-empty-state.component.scss',
@@ -25,5 +24,4 @@ import { UiIconComponent } from '../../../../../shared/ui/icon/icon.component';
 export class TasksEmptyStateComponent {
   @Input() busy = false;
   @Output() readonly createRequested = new EventEmitter<void>();
-  @Output() readonly examplesRequested = new EventEmitter<void>();
 }
