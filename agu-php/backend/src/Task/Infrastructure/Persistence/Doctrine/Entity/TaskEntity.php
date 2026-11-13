@@ -10,7 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Modelo de persistência da tabela `tasks` (migration Version20261111000000). Não tem regra de negócio:
  * é só a forma como o Doctrine lê e grava. A entidade de domínio é App\Task\Domain\Entity\Task;
- * a conversão entre as duas é feita pelo TaskMapper. Só as colunas em uso são mapeadas.
+ * a conversão entre as duas é feita pelo TaskMapper. As colunas `assigned_to` e `parent_task_id` ainda não são
+ * usadas (dependem das decisões sobre responsável e subtarefas) e ficam com o valor padrão do banco.
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'tasks')]
@@ -37,8 +38,17 @@ class TaskEntity
     #[ORM\Column(name: 'status_id', type: 'task_status')]
     public TaskStatus $status;
 
+    #[ORM\Column(name: 'start_date', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $startDate = null;
+
     #[ORM\Column(name: 'due_date', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?\DateTimeImmutable $dueDate = null;
+
+    #[ORM\Column(name: 'completed_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $completedAt = null;
+
+    #[ORM\Column(name: 'deleted_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $deletedAt = null;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
     public \DateTimeImmutable $createdAt;

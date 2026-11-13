@@ -48,7 +48,7 @@ final class CreateTaskEndpointTest extends WebTestCase
 
     public function testLoginReturnsJwtThatCreatesATask(): void
     {
-        $this->client->jsonRequest('POST', '/api/login', ['username' => $this->username, 'password' => self::PASSWORD]);
+        $this->client->jsonRequest('POST', '/api/login', ['email' => $this->username.'@example.com', 'password' => self::PASSWORD]);
         self::assertResponseIsSuccessful();
         $token = $this->json()['token'] ?? null;
         self::assertIsString($token);

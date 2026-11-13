@@ -1,4 +1,6 @@
 parameters:
+    # Armazenamento PRIVADO dos anexos: fora de public/, só acessível por um endpoint que valide o acesso.
+    app.uploads_directory: '%kernel.project_dir%/var/uploads'
 
 services:
     _defaults:
@@ -15,6 +17,11 @@ services:
             - '../src/*/Infrastructure/Persistence/Doctrine/Type/'
             - '../src/Kernel.php'
 
+    # Serviço de upload: o diretório de destino vem do parâmetro acima.
+    App\Shared\Infrastructure\Storage\FileUploader:
+        arguments:
+            $targetDirectory: '%app.uploads_directory%'
+
     App\Shared\Presentation\Http\CorsSubscriber:
         arguments:
             $allowedOrigins: '%env(csv:CORS_ALLOWED_ORIGINS)%'
@@ -22,9 +29,13 @@ services:
     # Portas → implementações (a aplicação só conhece as interfaces)
     App\Shared\Application\Port\ClockInterface: '@App\Shared\Infrastructure\Clock\SystemClock'
     App\Shared\Application\Port\TransactionRunnerInterface: '@App\Shared\Infrastructure\Persistence\DoctrineTransactionRunner'
+    App\Shared\Application\Port\FileStorageInterface: '@App\Shared\Infrastructure\Storage\FileUploader'
+    App\Shared\Application\Port\MimeTypeDetectorInterface: '@App\Shared\Infrastructure\Storage\FinfoMimeTypeDetector'
 
     App\Task\Domain\Repository\TaskRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskRepository'
     App\Task\Domain\Repository\TaskHistoryRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskHistoryRepository'
+    App\Task\Domain\Repository\TaskAttachmentRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskAttachmentRepository'
+    App\Task\Domain\Repository\TaskCommentRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskCommentRepository'
     App\Shared\Application\Port\CurrentUserIdProviderInterface: '@App\User\Infrastructure\Security\AuthenticatedUserIdProvider'
 
     App\User\Domain\Repository\UserRepositoryInterface: '@App\User\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'

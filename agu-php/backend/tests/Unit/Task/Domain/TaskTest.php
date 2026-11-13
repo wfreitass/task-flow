@@ -19,7 +19,7 @@ final class TaskTest extends TestCase
 
     public function testCreatesTaskInBacklogWithNormalizedFields(): void
     {
-        $task = Task::create(7, '  Estudar Symfony  ', "  detalhes \n", TaskPriority::High, null, $this->now);
+        $task = Task::create(7, '  Estudar Symfony  ', "  detalhes \n", TaskPriority::High, null, null, $this->now);
 
         self::assertSame(7, $task->createdBy());
         self::assertSame('Estudar Symfony', $task->title());
@@ -33,7 +33,7 @@ final class TaskTest extends TestCase
 
     public function testBlankDescriptionBecomesNull(): void
     {
-        $task = Task::create(1, 'Título', '   ', TaskPriority::Medium, null, $this->now);
+        $task = Task::create(1, 'Título', '   ', TaskPriority::Medium, null, null, $this->now);
 
         self::assertNull($task->description());
     }
@@ -42,7 +42,7 @@ final class TaskTest extends TestCase
     {
         $due = new \DateTimeImmutable('2026-12-01T18:00:00-03:00');
 
-        $task = Task::create(1, 'Título', null, TaskPriority::Low, $due, $this->now);
+        $task = Task::create(1, 'Título', null, TaskPriority::Low, null, $due, $this->now);
 
         self::assertSame('2026-12-01T21:00:00+00:00', $task->dueDate()?->format(\DATE_ATOM));
     }
@@ -52,13 +52,13 @@ final class TaskTest extends TestCase
         $this->expectException(InvalidTaskException::class);
         $this->expectExceptionMessage('obrigatório');
 
-        Task::create(1, "   \t", null, TaskPriority::Medium, null, $this->now);
+        Task::create(1, "   \t", null, TaskPriority::Medium, null, null, $this->now);
     }
 
     public function testRejectsTooLongTitle(): void
     {
         try {
-            Task::create(1, str_repeat('a', 256), null, TaskPriority::Medium, null, $this->now);
+            Task::create(1, str_repeat('a', 256), null, TaskPriority::Medium, null, null, $this->now);
             self::fail('Era esperada InvalidTaskException.');
         } catch (InvalidTaskException $e) {
             self::assertSame('TASK_TITLE_TOO_LONG', $e->errorCode());
@@ -67,7 +67,7 @@ final class TaskTest extends TestCase
 
     public function testAcceptsTitleWithExactlyMaxLength(): void
     {
-        $task = Task::create(1, str_repeat('a', 255), null, TaskPriority::Medium, null, $this->now);
+        $task = Task::create(1, str_repeat('a', 255), null, TaskPriority::Medium, null, null, $this->now);
 
         self::assertSame(255, mb_strlen($task->title()));
     }
@@ -76,15 +76,15 @@ final class TaskTest extends TestCase
     {
         $this->expectException(InvalidTaskException::class);
 
-        Task::create(0, 'Título', null, TaskPriority::Medium, null, $this->now);
+        Task::create(0, 'Título', null, TaskPriority::Medium, null, null, $this->now);
     }
 
     public function testSnapshotContainsOnlyScalarValues(): void
     {
-        $task = Task::create(1, 'Título', null, TaskPriority::Urgent, null, $this->now);
+        $task = Task::create(1, 'Título', null, TaskPriority::Urgent, null, null, $this->now);
 
         self::assertSame(
-            ['title' => 'Título', 'description' => null, 'priority' => 'urgent', 'status' => 'backlog', 'due_date' => null],
+            ['title' => 'Título', 'description' => null, 'priority' => 'urgent', 'status' => 'backlog', 'start_date' => null, 'due_date' => null, 'completed_at' => null],
             $task->snapshot(),
         );
     }

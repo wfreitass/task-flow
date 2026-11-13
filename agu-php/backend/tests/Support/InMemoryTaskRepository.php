@@ -3,6 +3,8 @@
 namespace App\Tests\Support;
 
 use App\Task\Domain\Entity\Task;
+use App\Task\Domain\Repository\TaskCriteria;
+use App\Task\Domain\Repository\TaskPage;
 use App\Task\Domain\Repository\TaskRepositoryInterface;
 
 final class InMemoryTaskRepository implements TaskRepositoryInterface
@@ -15,5 +17,31 @@ final class InMemoryTaskRepository implements TaskRepositoryInterface
         $this->tasks[] = $task;
         // Simula o id gerado pelo banco.
         (new \ReflectionProperty(Task::class, 'id'))->setValue($task, \count($this->tasks));
+    }
+
+    public function save(Task $task): void
+    {
+        // As entidades são guardadas por referência: já refletem as alterações.
+    }
+
+    public function findOwnedById(int $id, int $ownerId): ?Task
+    {
+        foreach ($this->tasks as $task) {
+            if ($task->id() === $id && $task->createdBy() === $ownerId && !$task->isDeleted()) {
+                return $task;
+            }
+        }
+
+        return null;
+    }
+
+    public function search(TaskCriteria $criteria): TaskPage
+    {
+        $owned = array_values(array_filter(
+            $this->tasks,
+            static fn (Task $task): bool => $task->createdBy() === $criteria->ownerId && !$task->isDeleted(),
+        ));
+
+        return new TaskPage(\array_slice($owned, $criteria->offset(), $criteria->perPage), \count($owned));
     }
 }

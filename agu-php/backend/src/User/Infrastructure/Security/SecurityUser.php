@@ -22,7 +22,7 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
 
     public function getUserIdentifier(): string
     {
-        return $this->user->username();
+        return $this->user->email();
     }
 
     public function getRoles(): array

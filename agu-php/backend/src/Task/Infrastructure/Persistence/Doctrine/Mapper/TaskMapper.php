@@ -36,9 +36,33 @@ final class TaskMapper
         $entity->description = $task->description();
         $entity->priority = $task->priority();
         $entity->status = $task->status();
+        $entity->startDate = $task->startDate();
         $entity->dueDate = $task->dueDate();
+        $entity->completedAt = $task->completedAt();
+        $entity->deletedAt = $task->deletedAt();
         $entity->createdAt = $task->createdAt();
         $entity->updatedAt = $task->updatedAt();
+    }
+
+    /**
+     * Reconstrói a tarefa a partir do que está no banco, sem refazer as validações de criação.
+     */
+    public function toDomain(TaskEntity $entity): Task
+    {
+        return $this->hydrator->hydrate(Task::class, [
+            'id' => $entity->id,
+            'createdBy' => $entity->createdBy,
+            'title' => $entity->title,
+            'description' => $entity->description,
+            'priority' => $entity->priority,
+            'status' => $entity->status,
+            'startDate' => $entity->startDate,
+            'dueDate' => $entity->dueDate,
+            'completedAt' => $entity->completedAt,
+            'deletedAt' => $entity->deletedAt,
+            'createdAt' => $entity->createdAt,
+            'updatedAt' => $entity->updatedAt,
+        ]);
     }
 
     /**

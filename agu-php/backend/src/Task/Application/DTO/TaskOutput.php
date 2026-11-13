@@ -15,12 +15,20 @@ final class TaskOutput
         public readonly ?string $description,
         public readonly TaskPriority $priority,
         public readonly TaskStatus $status,
+        public readonly ?\DateTimeImmutable $startDate,
         public readonly ?\DateTimeImmutable $dueDate,
+        public readonly ?\DateTimeImmutable $completedAt,
         public readonly \DateTimeImmutable $createdAt,
+        public readonly \DateTimeImmutable $updatedAt,
+        /** @var list<AttachmentOutput>|null null = anexos não carregados nesta operação */
+        public readonly ?array $attachments = null,
     ) {
     }
 
-    public static function fromTask(Task $task): self
+    /**
+     * @param list<AttachmentOutput>|null $attachments
+     */
+    public static function fromTask(Task $task, ?array $attachments = null): self
     {
         return new self(
             (int) $task->id(),
@@ -29,8 +37,12 @@ final class TaskOutput
             $task->description(),
             $task->priority(),
             $task->status(),
+            $task->startDate(),
             $task->dueDate(),
+            $task->completedAt(),
             $task->createdAt(),
+            $task->updatedAt(),
+            $attachments,
         );
     }
 }

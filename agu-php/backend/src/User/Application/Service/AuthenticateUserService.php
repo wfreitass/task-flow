@@ -20,7 +20,7 @@ final class AuthenticateUserService
 
     public function execute(AuthenticateUserInput $input): AccessTokenOutput
     {
-        $user = $this->users->findByUsername(trim($input->username));
+        $user = $this->users->findByEmail($input->email);
 
         if (null === $user) {
             // Gasta o mesmo custo de uma verificação real, para que o tempo de resposta

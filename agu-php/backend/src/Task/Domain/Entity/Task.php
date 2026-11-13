@@ -4,6 +4,7 @@ namespace App\Task\Domain\Entity;
 
 use App\Task\Domain\Enum\TaskPriority;
 use App\Task\Domain\Enum\TaskStatus;
+use App\Task\Domain\Exception\InvalidStatusTransitionException;
 use App\Task\Domain\Exception\InvalidTaskException;
 
 final class Task
@@ -16,7 +17,10 @@ final class Task
         private ?string $description,
         private TaskPriority $priority,
         private TaskStatus $status,
+        private ?\DateTimeImmutable $startDate,
         private ?\DateTimeImmutable $dueDate,
+        private ?\DateTimeImmutable $completedAt,
+        private ?\DateTimeImmutable $deletedAt,
         private \DateTimeImmutable $createdAt,
         private \DateTimeImmutable $updatedAt,
     ) {
@@ -27,6 +31,7 @@ final class Task
         string $title,
         ?string $description,
         TaskPriority $priority,
+        ?\DateTimeImmutable $startDate,
         ?\DateTimeImmutable $dueDate,
         \DateTimeImmutable $now,
     ): self {
@@ -34,29 +39,118 @@ final class Task
             throw InvalidTaskException::creatorRequired();
         }
 
-        $title = trim($title);
-        if ('' === $title) {
-            throw InvalidTaskException::titleRequired();
-        }
-        if (mb_strlen($title) > InvalidTaskException::TITLE_MAX_LENGTH) {
-            throw InvalidTaskException::titleTooLong();
-        }
-
-        $description = null === $description ? null : trim($description);
-        if ('' === $description) {
-            $description = null;
-        }
+        $startDate = self::toUtc($startDate);
+        $dueDate = self::toUtc($dueDate);
+        self::assertDateRange($startDate, $dueDate);
 
         return new self(
             createdBy: $createdBy,
-            title: $title,
-            description: $description,
+            title: self::normalizeTitle($title),
+            description: self::normalizeDescription($description),
             priority: $priority,
             status: TaskStatus::Backlog,
-            dueDate: $dueDate?->setTimezone(new \DateTimeZone('UTC')),
+            startDate: $startDate,
+            dueDate: $dueDate,
+            completedAt: null,
+            deletedAt: null,
             createdAt: $now,
             updatedAt: $now,
         );
+    }
+
+    /**
+     * Altera os dados da tarefa para os valores informados e devolve apenas o que mudou (para o histórico).
+     * Nada muda, inclusive `updatedAt`, se os valores forem iguais aos atuais. O status tem método próprio.
+     *
+     * @return array{old: array<string, string|null>, new: array<string, string|null>}
+     */
+    public function changeDetails(
+        string $title,
+        ?string $description,
+        TaskPriority $priority,
+        ?\DateTimeImmutable $startDate,
+        ?\DateTimeImmutable $dueDate,
+        \DateTimeImmutable $now,
+    ): array {
+        // Valida tudo antes de alterar qualquer campo.
+        $title = self::normalizeTitle($title);
+        $description = self::normalizeDescription($description);
+        $startDate = self::toUtc($startDate);
+        $dueDate = self::toUtc($dueDate);
+        self::assertDateRange($startDate, $dueDate);
+
+        $old = [];
+        $new = [];
+
+        if ($title !== $this->title) {
+            $old['title'] = $this->title;
+            $new['title'] = $title;
+            $this->title = $title;
+        }
+        if ($description !== $this->description) {
+            $old['description'] = $this->description;
+            $new['description'] = $description;
+            $this->description = $description;
+        }
+        if ($priority !== $this->priority) {
+            $old['priority'] = $this->priority->value;
+            $new['priority'] = $priority->value;
+            $this->priority = $priority;
+        }
+        if (self::formatDate($startDate) !== self::formatDate($this->startDate)) {
+            $old['start_date'] = self::formatDate($this->startDate);
+            $new['start_date'] = self::formatDate($startDate);
+            $this->startDate = $startDate;
+        }
+        if (self::formatDate($dueDate) !== self::formatDate($this->dueDate)) {
+            $old['due_date'] = self::formatDate($this->dueDate);
+            $new['due_date'] = self::formatDate($dueDate);
+            $this->dueDate = $dueDate;
+        }
+
+        if ([] !== $new) {
+            $this->updatedAt = $now;
+        }
+
+        return ['old' => $old, 'new' => $new];
+    }
+
+    /**
+     * Muda o status se a transição for permitida (mesmas regras de `task_status_transitions`).
+     * Ao entrar em `done` registra a conclusão; ao sair, limpa (como o trigger do banco).
+     *
+     * @return bool false se a tarefa já estava no status pedido
+     *
+     * @throws InvalidStatusTransitionException
+     */
+    public function changeStatus(TaskStatus $target, \DateTimeImmutable $now): bool
+    {
+        if ($target === $this->status) {
+            return false;
+        }
+        if (!$this->status->canTransitionTo($target)) {
+            throw new InvalidStatusTransitionException($this->status, $target);
+        }
+
+        $this->status = $target;
+        $this->completedAt = TaskStatus::Done === $target ? ($this->completedAt ?? $now) : null;
+        $this->updatedAt = $now;
+
+        return true;
+    }
+
+    /**
+     * Exclusão lógica: a tarefa deixa de aparecer, mas o registro e o histórico permanecem.
+     */
+    public function delete(\DateTimeImmutable $now): void
+    {
+        $this->deletedAt ??= $now;
+        $this->updatedAt = $now;
+    }
+
+    public function isDeleted(): bool
+    {
+        return null !== $this->deletedAt;
     }
 
     public function id(): ?int
@@ -89,9 +183,24 @@ final class Task
         return $this->status;
     }
 
+    public function startDate(): ?\DateTimeImmutable
+    {
+        return $this->startDate;
+    }
+
     public function dueDate(): ?\DateTimeImmutable
     {
         return $this->dueDate;
+    }
+
+    public function completedAt(): ?\DateTimeImmutable
+    {
+        return $this->completedAt;
+    }
+
+    public function deletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
     }
 
     public function createdAt(): \DateTimeImmutable
@@ -116,7 +225,49 @@ final class Task
             'description' => $this->description,
             'priority' => $this->priority->value,
             'status' => $this->status->value,
-            'due_date' => $this->dueDate?->format(\DATE_ATOM),
+            'start_date' => self::formatDate($this->startDate),
+            'due_date' => self::formatDate($this->dueDate),
+            'completed_at' => self::formatDate($this->completedAt),
         ];
+    }
+
+    private static function normalizeTitle(string $title): string
+    {
+        $title = trim($title);
+        if ('' === $title) {
+            throw InvalidTaskException::titleRequired();
+        }
+        if (mb_strlen($title) > InvalidTaskException::TITLE_MAX_LENGTH) {
+            throw InvalidTaskException::titleTooLong();
+        }
+
+        return $title;
+    }
+
+    private static function normalizeDescription(?string $description): ?string
+    {
+        $description = null === $description ? null : trim($description);
+
+        return '' === $description ? null : $description;
+    }
+
+    /**
+     * Mesma regra do CHECK `chk_tasks_dates` da tabela: o vencimento não pode ser anterior ao início.
+     */
+    private static function assertDateRange(?\DateTimeImmutable $startDate, ?\DateTimeImmutable $dueDate): void
+    {
+        if (null !== $startDate && null !== $dueDate && $dueDate < $startDate) {
+            throw InvalidTaskException::dueBeforeStart();
+        }
+    }
+
+    private static function toUtc(?\DateTimeImmutable $date): ?\DateTimeImmutable
+    {
+        return $date?->setTimezone(new \DateTimeZone('UTC'));
+    }
+
+    private static function formatDate(?\DateTimeImmutable $date): ?string
+    {
+        return $date?->setTimezone(new \DateTimeZone('UTC'))->format(\DATE_ATOM);
     }
 }

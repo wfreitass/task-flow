@@ -7,6 +7,7 @@ use App\Shared\Domain\Exception\DomainException;
 use App\Shared\Domain\Exception\NotFoundException;
 use App\Shared\Domain\Exception\UnauthorizedException;
 use App\Shared\Presentation\Http\Exception\MalformedRequestException;
+use App\Shared\Presentation\Http\Exception\PayloadTooLargeException;
 use App\Shared\Presentation\Http\Exception\ValidationFailedException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -36,6 +37,7 @@ final class ExceptionListener
 
         [$status, $code, $message, $details] = match (true) {
             $exception instanceof MalformedRequestException => [Response::HTTP_BAD_REQUEST, 'MALFORMED_REQUEST', 'O corpo da requisição não é um JSON válido.', []],
+            $exception instanceof PayloadTooLargeException => [Response::HTTP_REQUEST_ENTITY_TOO_LARGE, 'PAYLOAD_TOO_LARGE', 'O envio excede o tamanho máximo permitido para a requisição.', []],
             $exception instanceof ValidationFailedException => [Response::HTTP_UNPROCESSABLE_ENTITY, 'VALIDATION_FAILED', 'Dados inválidos.', $this->violations($exception)],
             $exception instanceof ConflictException => [Response::HTTP_CONFLICT, $exception->errorCode(), $exception->getMessage(), $exception->details()],
             $exception instanceof NotFoundException => [Response::HTTP_NOT_FOUND, $exception->errorCode(), $exception->getMessage(), $exception->details()],

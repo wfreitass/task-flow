@@ -6,14 +6,15 @@ use App\User\Application\DTO\AuthenticateUserInput;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Contrato HTTP de POST /api/login (o mesmo do frontend: {"username", "password"}).
+ * Contrato HTTP de POST /api/login ({"email", "password"}).
  */
 final class LoginRequest
 {
-    #[Assert\NotBlank(message: 'O nome de usuário é obrigatório.')]
-    #[Assert\Type(type: 'string', message: 'O nome de usuário deve ser um texto.')]
-    #[Assert\Length(max: 255)]
-    public mixed $username = null;
+    #[Assert\NotBlank(message: 'O e-mail é obrigatório.')]
+    #[Assert\Type(type: 'string', message: 'O e-mail deve ser um texto.')]
+    #[Assert\Email(message: 'O e-mail informado é inválido.')]
+    #[Assert\Length(max: 180, maxMessage: 'O e-mail deve ter no máximo {{ limit }} caracteres.')]
+    public mixed $email = null;
 
     #[Assert\NotBlank(message: 'A senha é obrigatória.')]
     #[Assert\Type(type: 'string', message: 'A senha deve ser um texto.')]
@@ -26,7 +27,7 @@ final class LoginRequest
     public static function fromArray(array $payload): self
     {
         $request = new self();
-        $request->username = $payload['username'] ?? null;
+        $request->email = $payload['email'] ?? null;
         $request->password = $payload['password'] ?? null;
 
         return $request;
@@ -37,6 +38,6 @@ final class LoginRequest
      */
     public function toInput(): AuthenticateUserInput
     {
-        return new AuthenticateUserInput((string) $this->username, (string) $this->password);
+        return new AuthenticateUserInput((string) $this->email, (string) $this->password);
     }
 }

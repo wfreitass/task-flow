@@ -39,7 +39,7 @@ final class DoctrineTaskPersistenceTest extends KernelTestCase
         $userId = $this->createUser('persist_'.bin2hex(random_bytes(4)));
 
         $output = self::getContainer()->get(CreateTaskService::class)->execute(
-            new CreateTaskInput('Estudar Doctrine', 'detalhes', TaskPriority::Urgent, new \DateTimeImmutable('2026-12-01T18:00:00-03:00')),
+            new CreateTaskInput('Estudar Doctrine', 'detalhes', TaskPriority::Urgent, null, new \DateTimeImmutable('2026-12-01T18:00:00-03:00')),
             $userId,
         );
 

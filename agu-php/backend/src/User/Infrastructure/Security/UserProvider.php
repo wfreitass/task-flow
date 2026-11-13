@@ -19,7 +19,7 @@ final class UserProvider implements UserProviderInterface
 
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        $user = $this->users->findByUsername($identifier);
+        $user = $this->users->findByEmail($identifier);
         if (null === $user || !$user->isActive()) {
             throw new UserNotFoundException();
         }

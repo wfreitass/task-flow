@@ -22,6 +22,15 @@ final class InvalidTaskException extends DomainException
         );
     }
 
+    public static function dueBeforeStart(): self
+    {
+        return new self(
+            'TASK_DUE_BEFORE_START',
+            'A data de vencimento não pode ser anterior à data de início.',
+            ['dueAt' => 'before_start'],
+        );
+    }
+
     public static function creatorRequired(): self
     {
         return new self('TASK_CREATOR_REQUIRED', 'A tarefa precisa de um usuário criador.', ['createdBy' => 'required']);

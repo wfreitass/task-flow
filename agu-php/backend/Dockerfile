@@ -17,6 +17,20 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-enable redis amqp \
     && rm -rf /var/lib/apt/lists/* /tmp/pear
 
+# Configuração do PHP para a API.
+#  - Upload: o padrão (2 MB por arquivo, 8 MB por requisição) barraria os anexos das tarefas. São 5 arquivos de até
+#    10 MB por envio; o limite do Nginx (docker-compose.yml) fica um pouco acima de post_max_size.
+#  - Erros: nunca na saída. Numa API JSON, um aviso do PHP impresso estraga a resposta e trava o status em 200
+#    (acontece, por exemplo, quando o upload passa de post_max_size). Vão para o log do contêiner (stderr).
+RUN { \
+        echo 'upload_max_filesize=10M'; \
+        echo 'post_max_size=55M'; \
+        echo 'max_file_uploads=10'; \
+        echo 'display_errors=Off'; \
+        echo 'log_errors=On'; \
+        echo 'error_log=/proc/self/fd/2'; \
+    } > /usr/local/etc/php/conf.d/app.ini
+
 # Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

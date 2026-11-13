@@ -24,6 +24,14 @@ final class TaskStatusType extends Type
         'canceled' => 6,
     ];
 
+    /**
+     * Id do status no catálogo `task_statuses`, para montar filtros que não passam pelo tipo DBAL.
+     */
+    public static function idOf(TaskStatus $status): int
+    {
+        return self::IDS[$status->value];
+    }
+
     public function getName(): string
     {
         return self::NAME;
