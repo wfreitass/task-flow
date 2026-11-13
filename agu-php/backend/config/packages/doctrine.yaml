@@ -11,17 +11,16 @@ doctrine:
         auto_mapping: false
         controller_resolver:
             auto_mapping: false
-        # Mapeamento por atributos PHP (#[ORM\...]) nas entidades de cada contexto.
+        # Entidades de PERSISTÊNCIA (modelos do Doctrine, com atributos #[ORM\...]) ficam na infraestrutura de
+        # cada contexto. As entidades de domínio são classes puras, ligadas a elas pelos mappers.
         mappings:
             Task:
                 is_bundle: false
                 type: attribute
-                dir: '%kernel.project_dir%/src/Task/Domain/Entity'
-                prefix: 'App\Task\Domain\Entity'
-                alias: Task
+                dir: '%kernel.project_dir%/src/Task/Infrastructure/Persistence/Doctrine/Entity'
+                prefix: 'App\Task\Infrastructure\Persistence\Doctrine\Entity'
             User:
                 is_bundle: false
                 type: attribute
-                dir: '%kernel.project_dir%/src/User/Domain/Entity'
-                prefix: 'App\User\Domain\Entity'
-                alias: User
+                dir: '%kernel.project_dir%/src/User/Infrastructure/Persistence/Doctrine/Entity'
+                prefix: 'App\User\Infrastructure\Persistence\Doctrine\Entity'

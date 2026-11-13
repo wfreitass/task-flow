@@ -3,35 +3,21 @@
 namespace App\User\Domain\Entity;
 
 use App\User\Domain\Exception\InvalidUserException;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
-#[ORM\Table(name: 'users')]
 final class User
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
-    #[ORM\Column(type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $id = null;
 
     /**
      * @param list<string> $roles
      */
     private function __construct(
-        #[ORM\Column(type: Types::STRING, length: 50)]
         private string $username,
-        #[ORM\Column(type: Types::STRING, length: 180)]
         private string $email,
-        #[ORM\Column(name: 'password', type: Types::STRING, length: 255)]
         private string $passwordHash,
-        #[ORM\Column(type: Types::JSON)]
         private array $roles,
-        #[ORM\Column(name: 'is_active', type: Types::BOOLEAN)]
         private bool $isActive,
-        #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
         private \DateTimeImmutable $createdAt,
-        #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE)]
         private \DateTimeImmutable $updatedAt,
     ) {
     }
@@ -83,5 +69,15 @@ final class User
     public function isActive(): bool
     {
         return $this->isActive;
+    }
+
+    public function createdAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function updatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
     }
 }

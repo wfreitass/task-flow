@@ -5,35 +5,19 @@ namespace App\Task\Domain\Entity;
 use App\Task\Domain\Enum\TaskPriority;
 use App\Task\Domain\Enum\TaskStatus;
 use App\Task\Domain\Exception\InvalidTaskException;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
-#[ORM\Table(name: 'tasks')]
 final class Task
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
-    #[ORM\Column(type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $id = null;
 
     private function __construct(
-        #[ORM\Column(name: 'created_by', type: Types::INTEGER, options: ['unsigned' => true])]
         private int $createdBy,
-        #[ORM\Column(type: Types::STRING, length: 255)]
         private string $title,
-        #[ORM\Column(type: Types::TEXT, length: 65535, nullable: true)]
         private ?string $description,
-        #[ORM\Column(type: Types::STRING, length: 12, enumType: TaskPriority::class)]
         private TaskPriority $priority,
-        // Tipo DBAL "task_status" (registrado em config/packages/doctrine.yaml): converte o enum no id do catálogo.
-        #[ORM\Column(name: 'status_id', type: 'task_status')]
         private TaskStatus $status,
-        #[ORM\Column(name: 'due_date', type: Types::DATETIME_IMMUTABLE, nullable: true)]
         private ?\DateTimeImmutable $dueDate,
-        #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
         private \DateTimeImmutable $createdAt,
-        #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE)]
         private \DateTimeImmutable $updatedAt,
     ) {
     }

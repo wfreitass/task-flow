@@ -4,6 +4,8 @@ FROM php:8.1-fpm
 # Instalar extensões necessárias.
 # pdo_mysql e zip estão em uso. redis e amqp ficam prontas para as integrações futuras
 # (cache em Redis e Symfony Messenger com RabbitMQ); OpenSearch é acessado por HTTP e não precisa de extensão.
+# O phpredis fica fixado em 6.0.2: o symfony/cache travado no composer.lock (6.4.x) tem um proxy do Redis
+# incompatível com o phpredis 6.1+ (erro fatal em Redis6Proxy::hSet). Remova a fixação ao atualizar o symfony/cache.
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libzip-dev \
@@ -11,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     && docker-php-ext-install pdo_mysql zip \
-    && pecl install redis amqp \
+    && pecl install redis-6.0.2 amqp \
     && docker-php-ext-enable redis amqp \
     && rm -rf /var/lib/apt/lists/* /tmp/pear
 

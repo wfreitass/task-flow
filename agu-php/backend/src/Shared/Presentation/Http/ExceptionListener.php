@@ -4,6 +4,7 @@ namespace App\Shared\Presentation\Http;
 
 use App\Shared\Domain\Exception\ConflictException;
 use App\Shared\Domain\Exception\DomainException;
+use App\Shared\Domain\Exception\NotFoundException;
 use App\Shared\Domain\Exception\UnauthorizedException;
 use App\Shared\Presentation\Http\Exception\MalformedRequestException;
 use App\Shared\Presentation\Http\Exception\ValidationFailedException;
@@ -37,6 +38,7 @@ final class ExceptionListener
             $exception instanceof MalformedRequestException => [Response::HTTP_BAD_REQUEST, 'MALFORMED_REQUEST', 'O corpo da requisição não é um JSON válido.', []],
             $exception instanceof ValidationFailedException => [Response::HTTP_UNPROCESSABLE_ENTITY, 'VALIDATION_FAILED', 'Dados inválidos.', $this->violations($exception)],
             $exception instanceof ConflictException => [Response::HTTP_CONFLICT, $exception->errorCode(), $exception->getMessage(), $exception->details()],
+            $exception instanceof NotFoundException => [Response::HTTP_NOT_FOUND, $exception->errorCode(), $exception->getMessage(), $exception->details()],
             $exception instanceof UnauthorizedException => [Response::HTTP_UNAUTHORIZED, $exception->errorCode(), $exception->getMessage(), $exception->details()],
             $exception instanceof DomainException => [Response::HTTP_UNPROCESSABLE_ENTITY, $exception->errorCode(), $exception->getMessage(), $exception->details()],
             $exception instanceof AuthenticationException => [Response::HTTP_UNAUTHORIZED, 'UNAUTHENTICATED', 'Autenticação necessária.', []],

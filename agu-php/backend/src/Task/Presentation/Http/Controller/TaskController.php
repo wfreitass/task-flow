@@ -2,9 +2,9 @@
 
 namespace App\Task\Presentation\Http\Controller;
 
+use App\Shared\Application\Port\CurrentUserIdProviderInterface;
 use App\Shared\Presentation\Http\JsonPayloadDecoder;
 use App\Shared\Presentation\Http\RequestValidator;
-use App\Task\Application\Port\CurrentUserIdProviderInterface;
 use App\Task\Application\Service\CreateTaskService;
 use App\Task\Presentation\Http\Request\CreateTaskRequest;
 use App\Task\Presentation\Http\Response\TaskResponse;

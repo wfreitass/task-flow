@@ -2,7 +2,7 @@
 
 namespace App\User\Infrastructure\Security;
 
-use App\Task\Application\Port\CurrentUserIdProviderInterface;
+use App\Shared\Application\Port\CurrentUserIdProviderInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 

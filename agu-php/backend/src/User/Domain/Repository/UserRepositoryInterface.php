@@ -8,6 +8,8 @@ use App\User\Domain\Exception\UsernameAlreadyTakenException;
 
 interface UserRepositoryInterface
 {
+    public function findById(int $id): ?User;
+
     public function findByUsername(string $username): ?User;
 
     public function findByEmail(string $email): ?User;

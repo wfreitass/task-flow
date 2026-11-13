@@ -11,8 +11,13 @@ services:
         resource: '../src/'
         exclude:
             - '../src/*/Domain/'
+            - '../src/*/Infrastructure/Persistence/Doctrine/Entity/'
             - '../src/*/Infrastructure/Persistence/Doctrine/Type/'
             - '../src/Kernel.php'
+
+    App\Shared\Presentation\Http\CorsSubscriber:
+        arguments:
+            $allowedOrigins: '%env(csv:CORS_ALLOWED_ORIGINS)%'
 
     # Portas → implementações (a aplicação só conhece as interfaces)
     App\Shared\Application\Port\ClockInterface: '@App\Shared\Infrastructure\Clock\SystemClock'
@@ -20,7 +25,7 @@ services:
 
     App\Task\Domain\Repository\TaskRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskRepository'
     App\Task\Domain\Repository\TaskHistoryRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskHistoryRepository'
-    App\Task\Application\Port\CurrentUserIdProviderInterface: '@App\User\Infrastructure\Security\AuthenticatedUserIdProvider'
+    App\Shared\Application\Port\CurrentUserIdProviderInterface: '@App\User\Infrastructure\Security\AuthenticatedUserIdProvider'
 
     App\User\Domain\Repository\UserRepositoryInterface: '@App\User\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
     App\User\Application\Port\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
