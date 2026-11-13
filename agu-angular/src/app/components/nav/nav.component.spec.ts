@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NavComponent } from './nav.component';
+import { provideRouter } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 describe('NavComponent', () => {
   let component: NavComponent;
@@ -8,7 +10,8 @@ describe('NavComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavComponent]
+      imports: [NavComponent],
+      providers: [provideRouter([]), { provide: AuthService, useValue: { logout: jasmine.createSpy('logout') } }],
     })
     .compileComponents();
     
