@@ -94,8 +94,9 @@ services:
     App\Task\Domain\Repository\TaskCommentRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskCommentRepository'
     App\Task\Application\Port\TaskActivityReaderInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskActivityReader'
     App\Shared\Application\Port\CurrentUserIdProviderInterface: '@App\User\Infrastructure\Security\AuthenticatedUserIdProvider'
-    # Perfis (admin/executor): os contextos perguntam por esta porta; o contexto User responde.
-    App\Shared\Application\Port\PermissionCheckerInterface: '@App\User\Infrastructure\Authorization\UserPermissionChecker'
+    # RBAC: os contextos perguntam por esta porta (usuário → profile → roles); o contexto User responde.
+    App\Shared\Application\Port\RoleCheckerInterface: '@App\User\Infrastructure\Authorization\ProfileRoleChecker'
+    App\User\Domain\Repository\ProfileRepositoryInterface: '@App\User\Infrastructure\Persistence\Doctrine\DoctrineProfileRepository'
 
     App\User\Domain\Repository\UserRepositoryInterface: '@App\User\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
     # O contexto Task consulta usuários por esta porta; quem a implementa é o contexto User.

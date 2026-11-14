@@ -5,7 +5,6 @@ namespace App\User\Infrastructure\Persistence\Doctrine\Mapper;
 use App\Shared\Infrastructure\Persistence\DomainObjectHydrator;
 use App\User\Domain\Entity\User;
 use App\User\Infrastructure\Persistence\Doctrine\Entity\UserEntity;
-use App\User\Infrastructure\Security\RoleNames;
 
 /**
  * Converte a entidade de domínio User e o modelo de persistência UserEntity.
@@ -22,7 +21,7 @@ final class UserMapper
         $entity->username = $user->username();
         $entity->email = $user->email();
         $entity->passwordHash = $user->passwordHash();
-        $entity->roles = RoleNames::toStored($user->role());
+        $entity->profileId = $user->profileId();
         $entity->isActive = $user->isActive();
         $entity->createdAt = $user->createdAt();
         $entity->updatedAt = $user->updatedAt();
@@ -35,7 +34,7 @@ final class UserMapper
      */
     public function fill(UserEntity $entity, User $user): void
     {
-        $entity->roles = RoleNames::toStored($user->role());
+        $entity->profileId = $user->profileId();
         $entity->isActive = $user->isActive();
         $entity->updatedAt = $user->updatedAt();
     }
@@ -50,7 +49,7 @@ final class UserMapper
             'username' => $entity->username,
             'email' => $entity->email,
             'passwordHash' => $entity->passwordHash,
-            'role' => RoleNames::fromStored($entity->roles),
+            'profileId' => $entity->profileId,
             'isActive' => $entity->isActive,
             'createdAt' => $entity->createdAt,
             'updatedAt' => $entity->updatedAt,

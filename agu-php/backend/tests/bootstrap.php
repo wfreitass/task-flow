@@ -18,7 +18,7 @@ if ($_SERVER['APP_DEBUG'] ?? false) {
 $databaseName = ltrim((string) parse_url((string) ($_SERVER['DATABASE_URL'] ?? ''), \PHP_URL_PATH), '/');
 if (!str_ends_with($databaseName, '_test')) {
     fwrite(\STDERR, sprintf(
-        "Testes abortados: DATABASE_URL aponta para o banco \"%s\". Use um banco de teste (nome terminado em \"_test\"). Veja docs/02-execucao-e-testes.md.\n",
+        "Testes abortados: DATABASE_URL aponta para o banco \"%s\". Use um banco de teste (nome terminado em \"_test\"). Veja backdocs/02-execucao-e-testes.md.\n",
         $databaseName,
     ));
     exit(1);

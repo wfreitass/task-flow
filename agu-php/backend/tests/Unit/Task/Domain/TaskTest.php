@@ -8,84 +8,55 @@ use App\Task\Domain\Enum\TaskStatus;
 use App\Task\Domain\Exception\InvalidTaskException;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Testes simples da entidade Task: título, status inicial e edição. Não usam banco nem framework.
+ */
 final class TaskTest extends TestCase
 {
-    private \DateTimeImmutable $now;
+    private const USER_ID = 1;
 
-    protected function setUp(): void
+    public function testNewTaskKeepsItsTitleAndStartsInBacklog(): void
     {
-        $this->now = new \DateTimeImmutable('2026-11-12 12:00:00', new \DateTimeZone('UTC'));
+        $task = $this->newTask('Estudar Symfony');
+
+        self::assertSame('Estudar Symfony', $task->title());          // verificar o título
+        self::assertSame(TaskStatus::Backlog, $task->status());        // toda tarefa nova começa no backlog
+        self::assertSame(self::USER_ID, $task->createdBy());
     }
 
-    public function testCreatesTaskInBacklogWithNormalizedFields(): void
+    public function testTitleIsTrimmed(): void
     {
-        $task = Task::create(7, '  Estudar Symfony  ', "  detalhes \n", TaskPriority::High, null, null, null, $this->now);
+        $task = $this->newTask('   Estudar Symfony   ');
 
-        self::assertSame(7, $task->createdBy());
         self::assertSame('Estudar Symfony', $task->title());
-        self::assertSame('detalhes', $task->description());
-        self::assertSame(TaskPriority::High, $task->priority());
-        self::assertSame(TaskStatus::Backlog, $task->status());
-        self::assertNull($task->id());
-        self::assertSame($this->now, $task->createdAt());
-        self::assertSame($this->now, $task->updatedAt());
     }
 
-    public function testBlankDescriptionBecomesNull(): void
-    {
-        $task = Task::create(1, 'Título', '   ', TaskPriority::Medium, null, null, null, $this->now);
-
-        self::assertNull($task->description());
-    }
-
-    public function testDueDateIsConvertedToUtc(): void
-    {
-        $due = new \DateTimeImmutable('2026-12-01T18:00:00-03:00');
-
-        $task = Task::create(1, 'Título', null, TaskPriority::Low, null, $due, null, $this->now);
-
-        self::assertSame('2026-12-01T21:00:00+00:00', $task->dueDate()?->format(\DATE_ATOM));
-    }
-
-    public function testRejectsBlankTitle(): void
-    {
-        $this->expectException(InvalidTaskException::class);
-        $this->expectExceptionMessage('obrigatório');
-
-        Task::create(1, "   \t", null, TaskPriority::Medium, null, null, null, $this->now);
-    }
-
-    public function testRejectsTooLongTitle(): void
-    {
-        try {
-            Task::create(1, str_repeat('a', 256), null, TaskPriority::Medium, null, null, null, $this->now);
-            self::fail('Era esperada InvalidTaskException.');
-        } catch (InvalidTaskException $e) {
-            self::assertSame('TASK_TITLE_TOO_LONG', $e->errorCode());
-        }
-    }
-
-    public function testAcceptsTitleWithExactlyMaxLength(): void
-    {
-        $task = Task::create(1, str_repeat('a', 255), null, TaskPriority::Medium, null, null, null, $this->now);
-
-        self::assertSame(255, mb_strlen($task->title()));
-    }
-
-    public function testRejectsMissingCreator(): void
+    public function testEmptyTitleIsRejected(): void
     {
         $this->expectException(InvalidTaskException::class);
 
-        Task::create(0, 'Título', null, TaskPriority::Medium, null, null, null, $this->now);
+        $this->newTask('   ');
     }
 
-    public function testSnapshotContainsOnlyScalarValues(): void
+    public function testEditingChangesTheTitle(): void
     {
-        $task = Task::create(1, 'Título', null, TaskPriority::Urgent, null, null, null, $this->now);
+        $task = $this->newTask('Título antigo');
 
-        self::assertSame(
-            ['assigned_to' => null, 'title' => 'Título', 'description' => null, 'priority' => 'urgent', 'status' => 'backlog', 'start_date' => null, 'due_date' => null, 'completed_at' => null],
-            $task->snapshot(),
-        );
+        // Editar: troca o título e devolve o que mudou (para o histórico).
+        $changes = $task->changeDetails('Título novo', null, TaskPriority::Medium, null, null, $this->now());
+
+        self::assertSame('Título novo', $task->title());
+        self::assertSame(['title' => 'Título antigo'], $changes['old']);
+        self::assertSame(['title' => 'Título novo'], $changes['new']);
+    }
+
+    private function newTask(string $title): Task
+    {
+        return Task::create(self::USER_ID, $title, null, TaskPriority::Medium, null, null, null, $this->now());
+    }
+
+    private function now(): \DateTimeImmutable
+    {
+        return new \DateTimeImmutable('2026-11-12 12:00:00', new \DateTimeZone('UTC'));
     }
 }

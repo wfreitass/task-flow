@@ -4,9 +4,9 @@ namespace App\Task\Application\Service;
 
 use App\Shared\Application\Port\ClockInterface;
 use App\Shared\Application\Port\EventPublisherInterface;
-use App\Shared\Application\Port\PermissionCheckerInterface;
+use App\Shared\Application\Port\RoleCheckerInterface;
 use App\Shared\Application\Port\TransactionRunnerInterface;
-use App\Shared\Domain\Permission;
+use App\Shared\Domain\Role;
 use App\Task\Application\DTO\ChangeTaskStatusInput;
 use App\Task\Application\DTO\TaskOutput;
 use App\Task\Domain\Entity\TaskHistory;
@@ -26,7 +26,7 @@ final class ChangeTaskStatusService
         private readonly TransactionRunnerInterface $transactions,
         private readonly TaskOutputFactory $outputs,
         private readonly EventPublisherInterface $events,
-        private readonly PermissionCheckerInterface $permissions,
+        private readonly RoleCheckerInterface $roles,
     ) {
     }
 
@@ -41,7 +41,7 @@ final class ChangeTaskStatusService
         // Cancelar (status `canceled`) é uma permissão do perfil: o executor muda os demais status, mas não cancela.
         // Vale mesmo que a tarefa já esteja cancelada, para a resposta não depender do estado dela.
         if (TaskStatus::Canceled === $input->status) {
-            $this->permissions->assertCan($authenticatedUserId, Permission::TaskCancel);
+            $this->roles->assertHas($authenticatedUserId, Role::TaskCancel);
         }
 
         return $this->transactions->run(function () use ($input, $authenticatedUserId): TaskOutput {

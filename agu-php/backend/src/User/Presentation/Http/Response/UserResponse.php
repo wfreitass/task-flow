@@ -16,7 +16,11 @@ final class UserResponse
             'id' => $user->id,
             'username' => $user->username,
             'email' => $user->email,
-            'role' => $user->role,
+            // O profile do usuário e as roles que ele dá. O frontend decide o que mostrar por `roles`.
+            'profile' => ['id' => $user->profileId, 'code' => $user->profileCode, 'name' => $user->profileName],
+            'roles' => $user->roles,
+            // Compatibilidade com o frontend atual (admin/executor): é o código do profile. Prefira `profile` e `roles`.
+            'role' => $user->profileCode,
         ];
     }
 

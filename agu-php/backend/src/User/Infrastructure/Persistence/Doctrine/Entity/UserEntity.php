@@ -27,9 +27,9 @@ class UserEntity
     #[ORM\Column(name: 'password', type: Types::STRING, length: 255)]
     public string $passwordHash;
 
-    /** @var list<string> */
-    #[ORM\Column(type: Types::JSON)]
-    public array $roles = [];
+    /** O profile do usuário (FK para `profiles`); as roles vêm dele. */
+    #[ORM\Column(name: 'profile_id', type: Types::SMALLINT, options: ['unsigned' => true])]
+    public int $profileId;
 
     #[ORM\Column(name: 'is_active', type: Types::BOOLEAN)]
     public bool $isActive = true;

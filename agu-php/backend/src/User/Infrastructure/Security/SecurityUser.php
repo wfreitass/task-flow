@@ -27,8 +27,8 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
 
     public function getRoles(): array
     {
-        // ROLE_USER é o papel básico de todo usuário autenticado; o outro é o perfil (admin ou executor).
-        return ['ROLE_USER', RoleNames::toSecurity($this->user->role())];
+        // Só o papel básico do Symfony. As roles do RBAC (profile → roles) são checadas pelo RoleCheckerInterface.
+        return ['ROLE_USER'];
     }
 
     public function getPassword(): string

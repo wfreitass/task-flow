@@ -2,8 +2,6 @@
 
 namespace App\User\Domain\Entity;
 
-use App\Shared\Domain\Permission;
-use App\User\Domain\Enum\UserRole;
 use App\User\Domain\Exception\InvalidUserException;
 
 final class User
@@ -14,14 +12,14 @@ final class User
         private string $username,
         private string $email,
         private string $passwordHash,
-        private UserRole $role,
+        private int $profileId,
         private bool $isActive,
         private \DateTimeImmutable $createdAt,
         private \DateTimeImmutable $updatedAt,
     ) {
     }
 
-    public static function register(string $username, string $email, string $passwordHash, \DateTimeImmutable $now): self
+    public static function register(string $username, string $email, string $passwordHash, int $profileId, \DateTimeImmutable $now): self
     {
         $username = trim($username);
         $length = mb_strlen($username);
@@ -34,8 +32,7 @@ final class User
             throw InvalidUserException::invalidEmail();
         }
 
-        // Todo cadastro novo é executor; quem vira admin é promovido (ChangeUserRoleService ou app:user:set-role).
-        return new self($username, $email, $passwordHash, UserRole::Executor, true, $now, $now);
+        return new self($username, $email, $passwordHash, $profileId, true, $now, $now);
     }
 
     public function id(): ?int
@@ -58,34 +55,27 @@ final class User
         return $this->passwordHash;
     }
 
-    public function role(): UserRole
+    /**
+     * O id do profile do usuário. As roles dele vêm do profile (ver Profile e RoleCheckerInterface).
+     */
+    public function profileId(): int
     {
-        return $this->role;
-    }
-
-    public function isAdmin(): bool
-    {
-        return UserRole::Admin === $this->role;
-    }
-
-    public function can(Permission $permission): bool
-    {
-        return $this->role->can($permission);
+        return $this->profileId;
     }
 
     /**
-     * Muda o perfil. Que o último admin não seja rebaixado é regra de quem conhece os outros usuários
-     * (ChangeUserRoleService), não deste objeto.
+     * Vincula o usuário a outro profile. Que o sistema não fique sem quem gerencie usuários é regra de quem
+     * conhece os outros usuários (ChangeUserProfileService), não deste objeto.
      *
-     * @return bool false se o usuário já tinha este perfil
+     * @return bool false se o usuário já tinha este profile
      */
-    public function changeRole(UserRole $role, \DateTimeImmutable $now): bool
+    public function changeProfile(int $profileId, \DateTimeImmutable $now): bool
     {
-        if ($role === $this->role) {
+        if ($profileId === $this->profileId) {
             return false;
         }
 
-        $this->role = $role;
+        $this->profileId = $profileId;
         $this->updatedAt = $now;
 
         return true;

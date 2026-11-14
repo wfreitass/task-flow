@@ -5,12 +5,14 @@ namespace App\User\Application\Service;
 use App\Shared\Application\Port\CurrentUserIdProviderInterface;
 use App\User\Application\DTO\UserOutput;
 use App\User\Domain\Exception\UserNotFoundException;
+use App\User\Domain\Repository\ProfileRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
 final class GetCurrentUserService
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
+        private readonly ProfileRepositoryInterface $profiles,
         private readonly CurrentUserIdProviderInterface $currentUser,
     ) {}
 
@@ -23,6 +25,8 @@ final class GetCurrentUserService
             throw new UserNotFoundException();
         }
 
-        return UserOutput::fromUser($user);
+        $profile = $this->profiles->findById($user->profileId()) ?? throw new UserNotFoundException();
+
+        return UserOutput::fromUser($user, $profile);
     }
 }

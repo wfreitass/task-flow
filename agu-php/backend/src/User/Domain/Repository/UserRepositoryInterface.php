@@ -45,8 +45,8 @@ interface UserRepositoryInterface
     public function save(User $user): void;
 
     /**
-     * Quantos admins ativos existem. Para usar DENTRO de uma transação: trava as linhas deles até o commit, para
-     * que dois rebaixamentos simultâneos não deixem o sistema sem nenhum admin.
+     * Quantos usuários ATIVOS têm a role (pelo profile). Para usar DENTRO de uma transação: trava as linhas deles até
+     * o commit, para que duas mudanças simultâneas não deixem o sistema sem ninguém com a role.
      */
-    public function countActiveAdminsForUpdate(): int;
+    public function countActiveWithRoleForUpdate(\App\Shared\Domain\Role $role): int;
 }

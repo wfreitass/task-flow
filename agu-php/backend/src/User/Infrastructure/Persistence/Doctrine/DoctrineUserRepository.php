@@ -3,13 +3,12 @@
 namespace App\User\Infrastructure\Persistence\Doctrine;
 
 use App\User\Domain\Entity\User;
-use App\User\Domain\Enum\UserRole;
+use App\Shared\Domain\Role;
 use App\User\Domain\Exception\EmailAlreadyRegisteredException;
 use App\User\Domain\Exception\UsernameAlreadyTakenException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Persistence\Doctrine\Entity\UserEntity;
 use App\User\Infrastructure\Persistence\Doctrine\Mapper\UserMapper;
-use App\User\Infrastructure\Security\RoleNames;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -104,12 +103,17 @@ final class DoctrineUserRepository implements UserRepositoryInterface
         $this->entityManager->flush();
     }
 
-    public function countActiveAdminsForUpdate(): int
+    public function countActiveWithRoleForUpdate(Role $role): int
     {
-        // `users.roles` é JSON: o filtro é em SQL. O FOR UPDATE trava as linhas dos admins até o fim da transação.
+        // Usuário → profile → roles, em SQL. O FOR UPDATE trava as linhas dos usuários que têm a role até o fim
+        // da transação.
         $ids = $this->entityManager->getConnection()->fetchFirstColumn(
-            'SELECT id FROM users WHERE is_active = 1 AND JSON_CONTAINS(roles, :role) FOR UPDATE',
-            ['role' => json_encode(RoleNames::toSecurity(UserRole::Admin))],
+            'SELECT u.id FROM users u
+               JOIN profile_roles pr ON pr.profile_id = u.profile_id
+               JOIN roles r ON r.id = pr.role_id
+              WHERE u.is_active = 1 AND r.code = :code
+                FOR UPDATE',
+            ['code' => $role->value],
         );
 
         return \count($ids);
