@@ -1,5 +1,9 @@
 # TaskFlow
 
+<p align="center">
+  <img src="./image.png" alt="Tela de login do TaskFlow: painel verde com o lema &quot;Menos ruído. Mais foco.&quot; e o formulário de entrada por e-mail e senha" width="900">
+</p>
+
 Aplicação de gerenciamento de tarefas (To-Do List) com quadro Kanban, comentários, anexos, histórico e atualização em tempo real. É um monólito modular: **frontend em Angular 17** e **backend em PHP 8.1 + Symfony 6.4**, falando por REST (e WebSocket), com MySQL como fonte de verdade.
 
 O que o usuário consegue fazer:
@@ -234,4 +238,14 @@ As senhas do ambiente (`user` / `password`, `dev-realtime-token`) são **só de 
 - **RBAC:** o administrador enxerga apenas as tarefas que criou ou que lhe foram atribuídas (a regra de posse vale por cima das roles). O executor cria tarefas, pois nada foi dito em contrário. O frontend ainda decide por `role === 'admin'`, e um profile personalizado não passa na validação dele; o backend mantém o campo `role` por compatibilidade.
 - **Testes:** a suíte do backend é pequena e didática (16 testes sobre criar, buscar, editar e verificar o título de tarefas); não cobre as integrações (e-mail, WebSocket, busca, RBAC). Os testes do frontend não são executados com frequência.
 - **Segurança de desenvolvimento:** os segredos de exemplo (`APP_SECRET`, `JWT_PASSPHRASE` em `agu-php/backend/.env_example`) e as senhas do Compose devem ser trocados fora do desenvolvimento. Não há renovação de token (refresh) nem limite de tentativas no login.
-- **PHP 8.1** já está fora de suporte; o plano de atualização está registrado em [backdocs/00-progresso.md](./backdocs/00-progresso.md).
+- **PHP 8.1** já está fora de suporte.
+
+---
+
+## Observação sobre o uso de IA
+
+Este projeto foi feito com apoio de ferramentas de IA para ajudar no layout(entre elas o Claude Code, da Anthropic). Onde ela foi usada:
+
+- **Layout:** o visual do frontend (telas de login e de cadastro, painel de tarefas, formulários e tema) foi desenhado com ajuda de IA.
+- **Kanban:** a IA ajudou na integração do quadro Kanban com a biblioteca jKanban (colunas por status, arrastar e soltar e a ligação com a API).
+
