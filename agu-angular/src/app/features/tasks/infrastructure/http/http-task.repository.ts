@@ -14,12 +14,13 @@ export class HttpTaskRepository implements TaskRepository {
   private readonly http = inject(HttpClient);
   private readonly session = inject(SessionTokenStorage);
 
-  async findAll(): Promise<Task[]> {
+  async findAll(query = ''): Promise<Task[]> {
     const tasks: Task[] = [];
     let page = 1;
     let totalPages = 1;
     do {
-      const params = new HttpParams().set('page', page).set('perPage', 100).set('sort', 'createdAt').set('order', 'desc');
+      let params = new HttpParams().set('page', page).set('perPage', 100);
+      params = query ? params.set('q', query).set('sort', 'relevance') : params.set('sort', 'createdAt').set('order', 'desc');
       const response = await this.request<TaskPageResponseDto>(this.http.get<TaskPageResponseDto>(apiUrl('tasks'), { headers: this.headers(), params }));
       tasks.push(...response.data.map(TaskApiMapper.toDomain));
       totalPages = response.meta.totalPages;
@@ -92,7 +93,12 @@ export class HttpTaskRepository implements TaskRepository {
       const body = error.error as TaskApiErrorDto | null;
       const message = body?.error?.message;
       const details = body?.error?.details;
-      if (details) {
+      if (body?.error?.code === 'PERMISSION_DENIED') return new Error('Seu perfil não permite esta ação. Atualize a página caso seu perfil tenha sido alterado.');
+      if (body?.error?.code === 'INVALID_STATUS_TRANSITION' && details?.['from'] === 'backlog') {
+        return new Error('Uma tarefa no Backlog pode passar para A fazer ou Cancelada. Para iniciá-la, altere primeiro o status para A fazer.');
+      }
+      if (body?.error?.code === 'INVALID_STATUS_TRANSITION') return new Error(message || 'Essa mudança de status não é permitida.');
+      if (body?.error?.code === 'VALIDATION_FAILED' && details) {
         const messages = Object.values(details).filter((value): value is string => typeof value === 'string');
         if (messages.length) return new Error(messages.join(' '));
       }

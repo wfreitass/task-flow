@@ -15,32 +15,15 @@ import { User } from '../../../../users/domain/user';
   selector: 'app-task-form',
   standalone: true,
   imports: [ReactiveFormsModule, UiFormFieldComponent, UiDateFieldComponent, UiFileDropzoneComponent, UiSelectComponent, UiFormActionsComponent],
-  template: `
-    <form [formGroup]="form" (ngSubmit)="submit()" [attr.aria-busy]="busy" novalidate>
-      <app-ui-form-field label="Título da tarefa" name="title" [control]="form.controls.title" placeholder="O que precisa ser feito?" [maxLength]="255" requiredMessage="Informe um título para a tarefa." [submitted]="submitAttempted()" />
-      <app-ui-form-field label="Descrição" name="description" [control]="form.controls.description" [multiline]="true" placeholder="Adicione contexto, ideias ou próximos passos (opcional)" [submitted]="submitAttempted()" />
-      <div class="date-fields">
-        <app-ui-date-field label="Data de início" [control]="form.controls.startAt" hint="Opcional" />
-        <app-ui-date-field label="Data de vencimento" [control]="form.controls.dueAt" hint="Opcional" />
-      </div>
-      @if (dateRangeError()) { <p class="field-error" role="alert">A data de vencimento deve ser igual ou posterior à data de início.</p> }
-      <app-ui-select label="Prioridade" [control]="form.controls.priority" [options]="priorityOptions" [submitted]="submitAttempted()" />
-      <app-ui-select label="Responsável" [control]="form.controls.assigneeId" [options]="assigneeOptions" />
-      @if (usersError()) { <p class="field-error" role="alert">Não foi possível carregar os usuários. <button type="button" (click)="loadUsers()">Tentar novamente</button></p> }
-      @if (!task) { <app-ui-file-dropzone [disabled]="busy" (filesChange)="filesChanged.emit($event)" /> }
-      @if (task) { <app-ui-select label="Status" [control]="form.controls.status" [options]="statusOptions" [submitted]="submitAttempted()" /> }
-      @if (task && !canManage) { <p class="field-error">Você pode alterar o status desta tarefa. Os demais campos são editados pelo criador.</p> }
-      @if (error) { <p class="form-error" role="alert">{{ error }}</p> }
-      <app-ui-form-actions [busy]="busy" [submitLabel]="task ? 'Salvar alterações' : 'Criar tarefa'" (cancelled)="cancelled.emit()" />
-    </form>
-  `,
-  styles: ['form{display:grid;gap:18px;padding-top:4px;min-width:0}.date-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.date-fields>*{min-width:0}.form-error,.field-error{padding:12px;margin:0;border-radius:8px;color:#9b3030;background:#fff3f1;font-size:12px;line-height:1.7}@media(max-width:480px){.date-fields{grid-template-columns:minmax(0,1fr);gap:12px}}'],
+  templateUrl: './task-form.component.html',
+  styleUrl: './task-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TaskFormComponent implements OnChanges, OnInit {
   @Input() task: Task | null = null;
   @Input() busy = false;
   @Input() canManage = true;
+  @Input() canCancel = false;
   @Input() error: string | null = null;
   @Output() readonly submitted = new EventEmitter<TaskDetails>();
   @Output() readonly cancelled = new EventEmitter<void>();
@@ -52,7 +35,9 @@ export class TaskFormComponent implements OnChanges, OnInit {
   readonly usersError = signal(false);
   private readonly _submitted = signal(false);
   readonly submitAttempted = this._submitted.asReadonly();
-  readonly statusOptions = TASK_STATUS_OPTIONS;
+  get statusOptions(): typeof TASK_STATUS_OPTIONS {
+    return this.canCancel || this.task?.status === 'canceled' ? TASK_STATUS_OPTIONS : TASK_STATUS_OPTIONS.filter(option => option.value !== 'canceled');
+  }
   readonly priorityOptions = [
     { value: 'low', label: 'Baixa' }, { value: 'medium', label: 'Média' },
     { value: 'high', label: 'Alta' }, { value: 'urgent', label: 'Urgente' },

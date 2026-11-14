@@ -1,0 +1,13 @@
+<section class="page">
+  <div class="breadcrumb">Área de trabalho <span>/</span> <strong>Usuários</strong></div>
+  <header><span>TRABALHO EM CONJUNTO</span><h1>Usuários<span>.</span></h1><p>Consulte as pessoas cadastradas no Task Flow.</p></header>
+  @if (store.loading()) {
+    <div class="message" role="status"><mat-spinner diameter="30" /> Carregando usuários...</div>
+  } @else if (store.error()) {
+    <div class="message error" role="alert"><p>{{ store.error() }}</p><button mat-stroked-button (click)="store.load()">Tentar novamente</button></div>
+  } @else {
+    <p class="count">{{ store.users().length }} usuário(s)</p>
+    @if (success()) { <p class="count" role="status">{{ success() }}</p> }
+    <app-ui-table [rows]="store.users()" [columns]="columns" caption="Lista de usuários" emptyMessage="Nenhum usuário encontrado." [actionLabel]="currentUser.canManageUsers() ? 'Alterar perfil' : ''" (rowAction)="changeRole($event)" />
+  }
+</section>

@@ -11,6 +11,7 @@ export class TaskApiMapper {
       priority: dto.priority as Task['priority'],
       status: dto.status,
       createdBy: dto.createdBy,
+      updatedAt: dto.updatedAt,
       assignee: dto.assignee,
       startAt: TaskApiMapper.toInputDate(dto.startAt),
       dueAt: TaskApiMapper.toInputDate(dto.dueAt),

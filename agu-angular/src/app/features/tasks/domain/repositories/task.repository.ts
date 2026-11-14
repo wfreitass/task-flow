@@ -4,7 +4,7 @@ import { TaskStatus } from '../value-objects/task-status.vo';
 export interface TaskAttachmentInput { readonly name: string; readonly type: string; readonly bytes: Uint8Array; }
 
 export interface TaskRepository {
-  findAll(): Promise<Task[]>;
+  findAll(query?: string): Promise<Task[]>;
   create(details: TaskDetails, attachments?: readonly TaskAttachmentInput[]): Promise<Task>;
   update(id: string, details: TaskDetails): Promise<Task>;
   remove(id: string): Promise<void>;

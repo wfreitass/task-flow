@@ -5,21 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
   selector: 'app-ui-file-dropzone',
   standalone: true,
   imports: [MatButtonModule],
-  template: `
-    <section class="dropzone" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-      <p>Arraste arquivos aqui ou selecione no seu dispositivo.</p>
-      <input #picker type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv" [disabled]="disabled" (change)="onSelect($event)">
-      <button mat-stroked-button type="button" [disabled]="disabled" (click)="picker.click()">Selecionar arquivos</button>
-      <p class="hint">Até 5 arquivos de 10 MB cada: PDF, imagens, TXT ou CSV.</p>
-      @if (error()) { <p role="alert" class="error">{{ error() }}</p> }
-      @if (files().length) {
-        <ul>@for (file of files(); track $index) {
-          <li><span>{{ file.name }}</span><button mat-button type="button" [disabled]="disabled" [attr.aria-label]="'Remover ' + file.name" (click)="remove($index)">Remover</button></li>
-        }</ul>
-      }
-    </section>
-  `,
-  styles: [':host{display:block;min-width:0}.dropzone{border:1px dashed #a8b6a4;border-radius:8px;padding:16px;text-align:center}.dropzone p{margin:0 0 10px}.hint{font-size:11px;color:#657461;margin-top:10px!important}.error{color:#9b3030;font-size:12px}ul{padding:0;margin:12px 0 0;list-style:none;text-align:left}li{display:flex;align-items:center;justify-content:space-between;gap:8px}li span{overflow-wrap:anywhere;min-width:0}'],
+  templateUrl: './file-dropzone.component.html',
+  styleUrl: './file-dropzone.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UiFileDropzoneComponent {

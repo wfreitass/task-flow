@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Alterar perfil</h2>
+<mat-dialog-content>
+  <p>Escolha o perfil de <strong>{{ user.username }}</strong>.</p>
+  @if (loading()) { <p role="status">Carregando perfil...</p> }
+  @else if (loadError()) { <p class="error" role="alert">{{ loadError() }}</p><button mat-button type="button" (click)="load()">Tentar novamente</button><button mat-button type="button" (click)="reference.close()">Fechar</button> }
+  @else {
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <app-ui-select label="Perfil" [control]="role" [options]="options" [submitted]="submitted()" />
+    <p class="hint">As permissões são determinadas pelo perfil selecionado.</p>
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+    <app-ui-form-actions [busy]="saving()" submitLabel="Salvar perfil" busyLabel="Salvando..." (cancelled)="reference.close()" />
+  </form>
+  }
+</mat-dialog-content>

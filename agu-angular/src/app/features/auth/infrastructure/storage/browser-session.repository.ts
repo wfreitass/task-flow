@@ -10,4 +10,8 @@ export class BrowserSessionRepository implements SessionRepository {
   save(session: AuthSession): void {
     this.storage.setToken(session.token);
   }
+
+  clear(): void {
+    this.storage.clear();
+  }
 }

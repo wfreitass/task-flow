@@ -11,15 +11,7 @@ let nextKanbanId = 0;
   selector: 'app-ui-kanban',
   standalone: true,
   imports: [MatButtonModule],
-  template: `
-    @if (error()) {
-      <div class="ui-kanban-error" role="alert">Não foi possível abrir o quadro. <button mat-button (click)="initialize()">Tentar novamente</button></div>
-    }
-    <div class="ui-kanban" [attr.aria-busy]="disabled" role="region" aria-label="Quadro Kanban" tabindex="0">
-      <div #canvas [id]="hostId" (keydown)="onKeydown($event)"></div>
-    </div>
-    <p class="ui-kanban-help">Arraste pelo símbolo ⠿ para mover. Para usar o teclado, abra o cartão e altere seu status no formulário.</p>
-  `,
+  templateUrl: './kanban.component.html',
   styleUrl: './kanban.component.scss',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -9,16 +9,8 @@ export interface UiSelectOption<T extends string> { readonly value: T; readonly 
   selector: 'app-ui-select',
   standalone: true,
   imports: [ReactiveFormsModule, MatFormFieldModule, MatSelectModule],
-  template: `
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>{{ label }}</mat-label>
-      <mat-select [formControl]="control">
-        @for (option of options; track option.value) { <mat-option [value]="option.value">{{ option.label }}</mat-option> }
-      </mat-select>
-      @if (control.hasError('required')) { <mat-error>Selecione uma opção.</mat-error> }
-    </mat-form-field>
-  `,
-  styles: [':host,mat-form-field{display:block;width:100%}'],
+  templateUrl: './select.component.html',
+  styleUrl: './select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UiSelectComponent<T extends string> {

@@ -1,0 +1,28 @@
+@if (view === 'comments') {
+  <section aria-label="Comentários">
+    @if (store.commentsLoading()) { <p role="status">Carregando comentários...</p> }
+    @else {
+      @if (store.commentsError()) { <p role="alert">{{ store.commentsError() }}</p><button mat-button type="button" (click)="store.loadComments(taskId)">Tentar novamente</button> }
+      @if (!store.comments().length && !store.commentsError()) { <p class="empty">Ainda não há comentários nesta tarefa.</p> }
+      @if (store.comments().length) { <ul>@for (item of store.comments(); track item.id) {
+      <li><div class="meta"><strong>{{ item.actorName || 'Usuário indisponível' }}</strong><time>{{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}</time></div><p class="content">{{ item.content }}</p></li>
+      }</ul> }
+    }
+    <form [formGroup]="form" (ngSubmit)="send()" novalidate>
+      <app-ui-form-field label="Novo comentário" name="comment" [control]="comment" [multiline]="true" [readonly]="store.sending()" [maxLength]="5000" placeholder="Escreva um comentário" requiredMessage="Escreva um comentário." [submitted]="submitted" />
+      @if (store.sendError()) { <p class="error" role="alert">{{ store.sendError() }}</p> }
+      <button mat-flat-button color="primary" type="submit" [disabled]="store.sending()">{{ store.sending() ? 'Enviando...' : 'Enviar comentário' }}</button>
+    </form>
+  </section>
+} @else {
+  <section aria-label="Histórico">
+    @if (store.historyLoading()) { <p role="status">Carregando histórico...</p> }
+    @else if (store.historyError()) { <p role="alert">{{ store.historyError() }}</p><button mat-button type="button" (click)="store.loadHistory(taskId)">Tentar novamente</button> }
+    @else if (!store.history().length) { <p class="empty">Ainda não há atividades registradas.</p> }
+    @else { <ul>@for (item of store.history(); track item.id) {
+      <li><div class="meta"><strong>{{ actionLabel(item.kind) }}</strong><time>{{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}</time></div><p>{{ item.actorName || 'Usuário indisponível' }}</p>
+        @if (changes(item).length) { <details><summary>Ver alterações</summary>@for (change of changes(item); track change.label) { <p><strong>{{ change.label }}:</strong> {{ change.before }} → {{ change.after }}</p> }</details> }
+      </li>
+    }</ul> }
+  </section>
+}

@@ -1,0 +1,8 @@
+<nav aria-label="Navegação principal">
+  <a class="brand" [routerLink]="homeLink" [attr.aria-label]="homeLabel"><span class="brand-mark"><app-ui-icon name="check" /></span><span>{{ brandPrimary }}<span class="brand-light">{{ brandSecondary }}</span><span class="brand-dot">.</span></span></a>
+  <div class="navigation"><span class="nav-label">{{ navigationLabel }}</span>@for (link of links; track link.path) { <a class="nav-link" [routerLink]="link.path" routerLinkActive="active"><app-ui-icon [name]="link.icon" /><span>{{ link.label }}</span><span class="nav-arrow" aria-hidden="true">›</span></a> }</div>
+  <div class="sidebar-bottom"><div class="demo-card"><span>{{ footerCaption }}</span><p>{{ footerMessage }}</p><small>{{ footerDetail }}</small></div>
+    <div class="account"><span class="avatar">{{ avatar }}</span><div><strong>{{ accountName }}</strong><span>{{ accountDetail }}</span></div></div>
+  </div>
+  <button mat-button class="logout" [attr.aria-label]="actionLabel" (click)="action.emit()"><app-ui-icon name="logout" /><span>{{ actionLabel }}</span></button>
+</nav>

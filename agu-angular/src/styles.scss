@@ -20,6 +20,7 @@ $task-flow-theme: mat.define-light-theme((
 @include mat.dialog-theme($task-flow-theme);
 @include mat.datepicker-theme($task-flow-theme);
 @include mat.table-theme($task-flow-theme);
+@include mat.tabs-theme($task-flow-theme);
 
 * { box-sizing: border-box; }
 body { margin: 0; color: #24382e; background: #fcfcfa; font-family: 'Segoe UI', Arial, sans-serif; -webkit-font-smoothing: antialiased; }

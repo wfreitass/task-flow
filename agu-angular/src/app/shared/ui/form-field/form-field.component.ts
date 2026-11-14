@@ -10,38 +10,8 @@ let nextFieldId = 0;
   selector: 'app-ui-form-field',
   standalone: true,
   imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule],
-  template: `
-    <mat-form-field appearance="outline" [subscriptSizing]="subscriptSizing">
-      <mat-label>{{ label }}</mat-label>
-      @if (multiline) {
-        <textarea matInput [id]="inputId || defaultId" [formControl]="control" [rows]="rows" [placeholder]="placeholder" [readonly]="readonly" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.name]="name" [attr.spellcheck]="spellcheck" [attr.autocapitalize]="autocapitalize"></textarea>
-      } @else {
-        <input matInput [id]="inputId || defaultId" [formControl]="control" [type]="type === 'password' && !passwordHidden() ? 'text' : type" [placeholder]="placeholder" [readonly]="readonly" [attr.minlength]="minLength" [attr.maxlength]="maxLength" [attr.name]="name" [attr.autocomplete]="autocomplete" [attr.spellcheck]="spellcheck" [attr.autocapitalize]="autocapitalize">
-      }
-      @if (type === 'password' && !multiline) {
-        <button mat-icon-button matSuffix type="button" [attr.aria-label]="passwordHidden() ? 'Mostrar senha' : 'Ocultar senha'" [attr.aria-pressed]="!passwordHidden()" [attr.aria-controls]="inputId || defaultId" [disabled]="readonly || control.disabled" (click)="togglePasswordVisibility()">
-          <svg class="eye-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/>
-            @if (!passwordHidden()) { <path d="m4 3 16 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/> }
-          </svg>
-        </button>
-      }
-      @if (hint) { <mat-hint>{{ hint }}</mat-hint> }
-      @if (control.hasError('required')) {
-        <mat-error>{{ requiredMessage }}</mat-error>
-      } @else if (control.hasError('email')) {
-        <mat-error>{{ emailMessage }}</mat-error>
-      } @else if (control.hasError('minlength')) {
-        <mat-error>{{ minLengthMessage }}</mat-error>
-      } @else if (control.hasError('pattern')) {
-        <mat-error>{{ patternMessage || requiredMessage }}</mat-error>
-      } @else if (control.hasError('maxlength')) {
-        <mat-error>Use no máximo {{ maxLength }} caracteres.</mat-error>
-      }
-    </mat-form-field>
-  `,
-  styles: [':host,mat-form-field{display:block;width:100%}mat-form-field{font-size:inherit}textarea{resize:vertical;min-height:90px}.eye-icon{display:block;width:20px;height:20px;margin:auto;color:#78847b}'],
+  templateUrl: './form-field.component.html',
+  styleUrl: './form-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UiFormFieldComponent {

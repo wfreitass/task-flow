@@ -1,10 +1,12 @@
 import { Provider, inject } from '@angular/core';
 import { ListUsersUseCase } from '../application/list-users.use-case';
+import { ChangeUserRoleUseCase } from '../application/change-user-role.use-case';
 import { HttpUserRepository, USER_REPOSITORY } from './http-user.repository';
 
 export function provideUsers(): Provider[] {
   return [
     { provide: USER_REPOSITORY, useClass: HttpUserRepository },
     { provide: ListUsersUseCase, useFactory: () => new ListUsersUseCase(inject(USER_REPOSITORY)) },
+    { provide: ChangeUserRoleUseCase, useFactory: () => new ChangeUserRoleUseCase(inject(USER_REPOSITORY)) },
   ];
 }

@@ -11,11 +11,15 @@ export class AuthenticatedUserMapper {
     if (
       typeof user.id !== 'number' || !Number.isInteger(user.id) || user.id < 1 ||
       typeof user.username !== 'string' || user.username.trim().length === 0 ||
-      typeof user.email !== 'string' || user.email.trim().length === 0
+      typeof user.email !== 'string' || user.email.trim().length === 0 ||
+      !user.profile || typeof user.profile !== 'object' || !('id' in user.profile) || !('code' in user.profile) || !('name' in user.profile) ||
+      typeof user.profile.id !== 'number' || !Number.isSafeInteger(user.profile.id) || user.profile.id < 1 ||
+      typeof user.profile.code !== 'string' || typeof user.profile.name !== 'string' ||
+      !Array.isArray(user.roles) || !user.roles.every((role: unknown) => typeof role === 'string')
     ) {
       throw new Error('A API retornou um perfil inválido.');
     }
 
-    return { id: user.id, username: user.username, email: user.email };
+    return { id: user.id, username: user.username, email: user.email, profile: { id: user.profile.id, code: user.profile.code, name: user.profile.name }, roles: [...user.roles] };
   }
 }

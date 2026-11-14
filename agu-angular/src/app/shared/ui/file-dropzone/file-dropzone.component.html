@@ -1,0 +1,12 @@
+<section class="dropzone" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+  <p>Arraste arquivos aqui ou selecione no seu dispositivo.</p>
+  <input #picker type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv" [disabled]="disabled" (change)="onSelect($event)">
+  <button mat-stroked-button type="button" [disabled]="disabled" (click)="picker.click()">Selecionar arquivos</button>
+  <p class="hint">Até 5 arquivos de 10 MB cada: PDF, imagens, TXT ou CSV.</p>
+  @if (error()) { <p role="alert" class="error">{{ error() }}</p> }
+  @if (files().length) {
+    <ul>@for (file of files(); track $index) {
+      <li><span>{{ file.name }}</span><button mat-button type="button" [disabled]="disabled" [attr.aria-label]="'Remover ' + file.name" (click)="remove($index)">Remover</button></li>
+    }</ul>
+  }
+</section>

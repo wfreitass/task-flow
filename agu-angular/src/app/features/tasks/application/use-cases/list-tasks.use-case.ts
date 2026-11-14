@@ -3,5 +3,5 @@ import { TaskRepository } from '../../domain/repositories/task.repository';
 
 export class ListTasksUseCase {
   constructor(private readonly repository: TaskRepository) {}
-  execute(): Promise<Task[]> { return this.repository.findAll(); }
+  execute(query?: string): Promise<Task[]> { return this.repository.findAll(query); }
 }

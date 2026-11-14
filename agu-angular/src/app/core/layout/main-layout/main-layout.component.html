@@ -1,0 +1,17 @@
+<app-nav
+  homeLink="/tasks"
+  homeLabel="Task Flow, painel de tarefas"
+  brandPrimary="task"
+  brandSecondary="flow"
+  navigationLabel="ÁREA DE TRABALHO"
+  [links]="links"
+  footerCaption="UM PASSO DE CADA VEZ"
+  [footerMessage]="'Organize o presente.\nAbra espaço para o próximo.'"
+  footerDetail="Seu espaço pessoal está pronto."
+  [avatar]="currentUser.avatarInitials()"
+  [accountName]="currentUser.user()?.username ?? (currentUser.loading() ? 'Carregando...' : 'Minha conta')"
+  [accountDetail]="currentUser.user()?.email ?? 'Task Flow'"
+  actionLabel="Sair da conta"
+  (action)="logout()"
+/>
+<main><router-outlet /></main>

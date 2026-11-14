@@ -4,12 +4,16 @@ import { DeleteTaskUseCase } from '../../application/use-cases/delete-task.use-c
 import { ListTasksUseCase } from '../../application/use-cases/list-tasks.use-case';
 import { MoveTaskUseCase } from '../../application/use-cases/move-task.use-case';
 import { UpdateTaskUseCase } from '../../application/use-cases/update-task.use-case';
+import { WatchTaskStatusUseCase } from '../../application/use-cases/watch-task-status.use-case';
 import { HttpTaskRepository } from '../http/http-task.repository';
-import { TASK_REPOSITORY } from './task.tokens';
+import { TASK_REALTIME_REPOSITORY, TASK_REPOSITORY } from './task.tokens';
+import { WebsocketTaskRealtimeRepository } from '../realtime/websocket-task-realtime.repository';
 
 export function provideTasks(): Provider[] {
   return [
     { provide: TASK_REPOSITORY, useClass: HttpTaskRepository },
+    { provide: TASK_REALTIME_REPOSITORY, useClass: WebsocketTaskRealtimeRepository },
+    { provide: WatchTaskStatusUseCase, useFactory: () => new WatchTaskStatusUseCase(inject(TASK_REALTIME_REPOSITORY)) },
     { provide: ListTasksUseCase, useFactory: () => new ListTasksUseCase(inject(TASK_REPOSITORY)) },
     { provide: CreateTaskUseCase, useFactory: () => new CreateTaskUseCase(inject(TASK_REPOSITORY)) },
     { provide: UpdateTaskUseCase, useFactory: () => new UpdateTaskUseCase(inject(TASK_REPOSITORY)) },

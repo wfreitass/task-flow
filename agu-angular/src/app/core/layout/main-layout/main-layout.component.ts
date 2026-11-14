@@ -1,13 +1,31 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { NavComponent } from '../../../components/nav/nav.component';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { NavComponent, NavLink } from '../../../shared/ui/nav/nav.component';
+import { CurrentUserStore } from '../../../features/auth/presentation/state/current-user.store';
+import { LogoutUseCase } from '../../../features/auth/application/use-cases/logout.use-case';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
   imports: [NavComponent, RouterOutlet],
-  template: '<app-nav /><main><router-outlet /></main>',
-  styles: [':host{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:100dvh;background:#f6f8f3}main{min-width:0}@media(max-width:900px){:host{grid-template-columns:minmax(0,1fr)}}'],
+  templateUrl: './main-layout.component.html',
+  styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MainLayoutComponent {}
+export class MainLayoutComponent implements OnInit {
+  readonly currentUser = inject(CurrentUserStore);
+  private readonly logoutUseCase = inject(LogoutUseCase);
+  private readonly router = inject(Router);
+  readonly links: readonly NavLink[] = [
+    { path: '/tasks', label: 'Minhas tarefas', icon: 'board' },
+    { path: '/users', label: 'Usuários', icon: 'users' },
+  ];
+
+  ngOnInit(): void { void this.currentUser.load(); }
+
+  logout(): void {
+    this.currentUser.clear();
+    try { this.logoutUseCase.execute(); }
+    finally { void this.router.navigateByUrl('/login'); }
+  }
+}

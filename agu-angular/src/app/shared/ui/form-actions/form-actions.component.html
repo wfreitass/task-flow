@@ -1,0 +1,10 @@
+<div class="actions" [class.full-width]="fullWidth">
+  @if (showCancel) {
+    <button mat-button type="button" [disabled]="busy" (click)="cancelled.emit()">{{ cancelLabel }}</button>
+  }
+  <button mat-flat-button color="primary" type="submit" [disabled]="busy">
+    @if (busy) { <mat-spinner diameter="16" aria-hidden="true" /> }
+    {{ busy ? busyLabel : submitLabel }}
+    @if (!busy && submitSuffix) { <span class="submit-suffix" aria-hidden="true">{{ submitSuffix }}</span> }
+  </button>
+</div>

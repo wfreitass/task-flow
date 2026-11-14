@@ -1,0 +1,18 @@
+<form [formGroup]="form" (ngSubmit)="submit()" [attr.aria-busy]="busy" novalidate>
+  <app-ui-form-field label="Título da tarefa" name="title" [control]="form.controls.title" placeholder="O que precisa ser feito?" [maxLength]="255" requiredMessage="Informe um título para a tarefa." [submitted]="submitAttempted()" />
+  <app-ui-form-field label="Descrição" name="description" [control]="form.controls.description" [multiline]="true" placeholder="Adicione contexto, ideias ou próximos passos (opcional)" [submitted]="submitAttempted()" />
+  <div class="date-fields">
+    <app-ui-date-field label="Data de início" [control]="form.controls.startAt" hint="Opcional" />
+    <app-ui-date-field label="Data de vencimento" [control]="form.controls.dueAt" hint="Opcional" />
+  </div>
+  @if (dateRangeError()) { <p class="field-error" role="alert">A data de vencimento deve ser igual ou posterior à data de início.</p> }
+  <app-ui-select label="Prioridade" [control]="form.controls.priority" [options]="priorityOptions" [submitted]="submitAttempted()" />
+  <app-ui-select label="Responsável" [control]="form.controls.assigneeId" [options]="assigneeOptions" />
+  @if (usersError()) { <p class="field-error" role="alert">Não foi possível carregar os usuários. <button type="button" (click)="loadUsers()">Tentar novamente</button></p> }
+  @if (!task) { <app-ui-file-dropzone [disabled]="busy" (filesChange)="filesChanged.emit($event)" /> }
+  @if (task) { <app-ui-select label="Status" [control]="form.controls.status" [options]="statusOptions" [submitted]="submitAttempted()" /> }
+  @if (task?.status === 'backlog') { <p class="status-hint">{{ canCancel ? 'Uma tarefa no Backlog pode passar para A fazer ou Cancelada.' : 'Uma tarefa no Backlog deve passar para A fazer antes de ser iniciada.' }}</p> }
+  @if (task && !canManage) { <p class="field-error">Você pode alterar o status desta tarefa. Os demais campos são editados pelo criador.</p> }
+  @if (error) { <p class="form-error" role="alert">{{ error }}</p> }
+  <app-ui-form-actions [busy]="busy" [submitLabel]="task ? 'Salvar alterações' : 'Criar tarefa'" (cancelled)="cancelled.emit()" />
+</form>

@@ -11,6 +11,7 @@ export interface TaskDetails {
   readonly dueAt?: string;
   readonly assignee?: TaskAssignee | null;
   readonly createdBy?: number;
+  readonly updatedAt?: string;
 }
 
 export const TASK_PRIORITIES = ['low', 'medium', 'high', 'urgent'] as const;
@@ -34,6 +35,7 @@ export class Task {
     public readonly dueAt: string,
     public readonly assignee: TaskAssignee | null,
     public readonly createdBy: number,
+    public readonly updatedAt: string,
   ) {}
 
   static create(id: string, details: TaskDetails): Task {
@@ -48,7 +50,7 @@ export class Task {
     if (startAt && dueAt && dueAt < startAt) {
       throw new TaskValidationError('A data de vencimento deve ser igual ou posterior à data de início.');
     }
-    return new Task(id, title, details.description.trim(), details.status, priority, startAt, dueAt, details.assignee ?? null, details.createdBy ?? 0);
+    return new Task(id, title, details.description.trim(), details.status, priority, startAt, dueAt, details.assignee ?? null, details.createdBy ?? 0, details.updatedAt ?? '');
   }
 
   withDetails(details: TaskDetails): Task {

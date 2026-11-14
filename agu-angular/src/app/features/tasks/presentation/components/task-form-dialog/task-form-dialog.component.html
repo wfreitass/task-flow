@@ -1,0 +1,16 @@
+<header>
+  <div><span>SEU TRABALHO, EM MOVIMENTO</span><h2 mat-dialog-title>{{ task ? 'Detalhes da tarefa' : 'Nova tarefa' }}</h2></div>
+  <button mat-icon-button class="close-button" aria-label="Fechar formulário" [disabled]="store.saving() || reading() || activity.sending()" (click)="reference.close()"><app-ui-icon name="close" /></button>
+</header>
+<mat-dialog-content>
+  <mat-tab-group [preserveContent]="true" [dynamicHeight]="true" [animationDuration]="'0ms'">
+    <mat-tab label="Detalhes">
+      <p class="intro">{{ task ? 'Atualize os detalhes e acompanhe o próximo passo.' : 'Dê um nome à sua ideia. O próximo passo vem depois.' }}</p>
+      @if (!task) { <p class="intro">Salve a tarefa para acessar comentários e histórico.</p> }
+      <app-task-form [task]="task" [canManage]="canManage()" [canCancel]="currentUser.canCancelTask()" [busy]="store.saving() || reading() || activity.sending()" [error]="readError() || store.mutationError()" (filesChanged)="files = $event" (submitted)="save($event)" (cancelled)="reference.close()" />
+      @if (task && canManage() && currentUser.canDeleteTask()) { <button mat-button color="warn" class="delete-button" [disabled]="store.saving() || activity.sending()" (click)="confirmDelete()"><app-ui-icon name="trash" /> Excluir tarefa</button> }
+    </mat-tab>
+    <mat-tab label="Comentários" [disabled]="!task">@if (task) { <app-task-activity [taskId]="task.id" view="comments" /> }</mat-tab>
+    <mat-tab label="Histórico" [disabled]="!task">@if (task) { <app-task-activity [taskId]="task.id" view="history" /> }</mat-tab>
+  </mat-tab-group>
+</mat-dialog-content>

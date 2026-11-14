@@ -27,9 +27,11 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              { "glob": "jkanban.min.js", "input": "node_modules/jkanban/dist", "output": "assets/vendor/jkanban" }
             ],
             "styles": [
+              "node_modules/jkanban/dist/jkanban.min.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -87,9 +89,11 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              { "glob": "jkanban.min.js", "input": "node_modules/jkanban/dist", "output": "assets/vendor/jkanban" }
             ],
             "styles": [
+              "node_modules/jkanban/dist/jkanban.min.css",
               "src/styles.scss"
             ],
             "scripts": []

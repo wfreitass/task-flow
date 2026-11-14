@@ -28,5 +28,5 @@ export interface TaskMutationRequestDto {
 }
 
 export interface TaskApiErrorDto {
-  readonly error?: { readonly message?: string; readonly details?: Record<string, unknown> };
+  readonly error?: { readonly code?: string; readonly message?: string; readonly details?: Record<string, unknown> };
 }

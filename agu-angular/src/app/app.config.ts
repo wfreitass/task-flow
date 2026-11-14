@@ -6,10 +6,13 @@ import { sessionExpirationInterceptor } from './core/auth/session-expiration.int
 
 import { routes } from './app-routes';
 import { GetCurrentUserUseCase } from './features/auth/application/use-cases/get-current-user.use-case';
-import { CURRENT_USER_REPOSITORY } from './features/auth/infrastructure/di/auth.tokens';
+import { LogoutUseCase } from './features/auth/application/use-cases/logout.use-case';
+import { CURRENT_USER_REPOSITORY, SESSION_REPOSITORY } from './features/auth/infrastructure/di/auth.tokens';
 import { HttpCurrentUserRepository } from './features/auth/infrastructure/http/http-current-user.repository';
+import { BrowserSessionRepository } from './features/auth/infrastructure/storage/browser-session.repository';
 import { CurrentUserStore } from './features/auth/presentation/state/current-user.store';
 import { provideUsers } from './features/users/infrastructure/user.providers';
+import { provideTaskActivity } from './features/tasks/infrastructure/di/task-activity.providers';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,7 +20,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideAnimationsAsync(),
     ...provideUsers(),
+    ...provideTaskActivity(),
     { provide: CURRENT_USER_REPOSITORY, useClass: HttpCurrentUserRepository },
+    { provide: SESSION_REPOSITORY, useClass: BrowserSessionRepository },
+    { provide: LogoutUseCase, useFactory: () => new LogoutUseCase(inject(SESSION_REPOSITORY)) },
     {
       provide: GetCurrentUserUseCase,
       useFactory: () => new GetCurrentUserUseCase(inject(CURRENT_USER_REPOSITORY)),

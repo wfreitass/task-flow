@@ -66,7 +66,7 @@ export class TaskListComponent implements OnInit {
   clearFilters(): void { this.search.setValue(''); this.status.setValue('all'); }
 
   selectTask(id: string): void {
-    const task = this.store.tasks().find(item => item.id === id);
+    const task = this.store.filteredTasks().find(item => item.id === id);
     if (task) this.openTask(task);
   }
 

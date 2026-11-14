@@ -18,8 +18,8 @@ const ICON_PATHS: Record<UiIconName, string> = {
 @Component({
   selector: 'app-ui-icon',
   standalone: true,
-  template: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path [attr.d]="path" /></svg>',
-  styles: [':host{display:inline-flex;flex-shrink:0;width:20px;height:20px;vertical-align:middle}svg{width:100%;height:100%}'],
+  templateUrl: './icon.component.html',
+  styleUrl: './icon.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UiIconComponent {

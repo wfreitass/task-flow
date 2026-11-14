@@ -1,0 +1,10 @@
+<mat-form-field appearance="outline" subscriptSizing="dynamic">
+  <mat-label>{{ label }}</mat-label>
+  <input matInput [matDatepicker]="picker" [formControl]="control" readonly (click)="picker.open()">
+  <mat-datepicker-toggle matIconSuffix [for]="picker" />
+  <mat-datepicker #picker />
+  @if (hint) { <mat-hint>{{ hint }}</mat-hint> }
+</mat-form-field>
+@if (control.value && !control.disabled) {
+  <button mat-button class="clear-date" type="button" [attr.aria-label]="'Limpar ' + label" (click)="control.setValue(null)">Limpar data</button>
+}

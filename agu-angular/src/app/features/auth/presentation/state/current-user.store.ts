@@ -10,6 +10,9 @@ export class CurrentUserStore {
 
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
+  readonly canManageUsers = computed(() => this._user()?.roles.includes('user.manage') ?? false);
+  readonly canDeleteTask = computed(() => this._user()?.roles.includes('task.delete') ?? false);
+  readonly canCancelTask = computed(() => this._user()?.roles.includes('task.cancel') ?? false);
   readonly avatarInitials = computed(() => this.user()?.username.trim().slice(0, 2).toUpperCase() || 'TF');
 
   async load(): Promise<void> {
