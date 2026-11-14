@@ -11,6 +11,8 @@ enum TaskSortField: string
     case DueDate = 'dueDate';
     case Title = 'title';
     case Status = 'status';
+    /** Só tem efeito numa busca por texto (q); nas demais listagens, vale a data de criação. */
+    case Relevance = 'relevance';
 
     /**
      * @return list<string>

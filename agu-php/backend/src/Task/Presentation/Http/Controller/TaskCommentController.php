@@ -6,6 +6,7 @@ use App\Shared\Application\Port\CurrentUserIdProviderInterface;
 use App\Shared\Presentation\Http\RequestPayloadDecoder;
 use App\Shared\Presentation\Http\RequestValidator;
 use App\Task\Application\Service\AddTaskCommentService;
+use App\Task\Application\Service\ListTaskActivityService;
 use App\Task\Presentation\Http\Request\AddTaskCommentRequest;
 use App\Task\Presentation\Http\Response\CommentResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,6 +27,12 @@ final class TaskCommentController
         private readonly RequestPayloadDecoder $payload,
         private readonly RequestValidator $validator,
     ) {
+    }
+
+    #[Route('', name: 'task_comment_list', methods: ['GET'])]
+    public function list(int $id, ListTaskActivityService $activity): JsonResponse
+    {
+        return new JsonResponse(['data' => $activity->execute($id, $this->currentUser->currentUserId(), false)]);
     }
 
     #[Route('', name: 'task_comment_add', methods: ['POST'])]

@@ -51,14 +51,18 @@ EXPOSE 9000
 # Ao iniciar o contêiner, nesta ordem:
 #   1. umask 0000: arquivos gerados em runtime (var/, vendor/, chaves) ficam legíveis e graváveis
 #      pelo PHP-FPM (www-data), mesmo criados pelo root deste comando, e apagáveis no host;
-#   2. cria o .env a partir do .env_example, se não existir;
-#   3. instala as dependências, se o volume montado ainda não tiver vendor/;
-#   4. espera o MySQL aceitar conexões;
-#   5. aplica as migrations do banco;
-#   6. gera as chaves JWT (config/jwt/*.pem), se ainda não existirem;
-#   7. troca o shell pelo PHP-FPM (exec), que passa a receber os sinais do Docker.
+#   2. libera a escrita em var/ (cache e logs): comandos rodados com outro usuário (ex.: composer pelo uid do host
+#      ou como root) deixam arquivos que o www-data, dono do PHP-FPM e do worker, não conseguiria alterar
+#      ("Unable to write in the cache directory");
+#   3. cria o .env a partir do .env_example, se não existir;
+#   4. instala as dependências, se o volume montado ainda não tiver vendor/;
+#   5. espera o MySQL aceitar conexões;
+#   6. aplica as migrations do banco;
+#   7. gera as chaves JWT (config/jwt/*.pem), se ainda não existirem;
+#   8. troca o shell pelo PHP-FPM (exec), que passa a receber os sinais do Docker.
 CMD umask 0000; \
     set -e; \
+    mkdir -p var; chmod -R a+rwX var; \
     [ -f .env ] || cp .env_example .env; \
     [ -f vendor/autoload_runtime.php ] || composer install --no-interaction --no-scripts; \
     php docker/wait-for-database.php; \

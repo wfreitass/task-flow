@@ -38,4 +38,15 @@ interface UserRepositoryInterface
      * @throws EmailAlreadyRegisteredException se o e-mail já existir
      */
     public function add(User $user): void;
+
+    /**
+     * Grava as alterações de um usuário que já existe.
+     */
+    public function save(User $user): void;
+
+    /**
+     * Quantos admins ativos existem. Para usar DENTRO de uma transação: trava as linhas deles até o commit, para
+     * que dois rebaixamentos simultâneos não deixem o sistema sem nenhum admin.
+     */
+    public function countActiveAdminsForUpdate(): int;
 }

@@ -10,6 +10,7 @@ use App\Task\Application\Service\CreateTaskService;
 use App\Task\Application\Service\DeleteTaskService;
 use App\Task\Application\Service\GetTaskService;
 use App\Task\Application\Service\ListTasksService;
+use App\Task\Application\Service\ListTaskActivityService;
 use App\Task\Application\Service\UpdateTaskService;
 use App\Task\Presentation\Http\Request\ChangeTaskStatusRequest;
 use App\Task\Presentation\Http\Request\CreateTaskRequest;
@@ -35,6 +36,12 @@ final class TaskController
         private readonly RequestPayloadDecoder $payload,
         private readonly RequestValidator $validator,
     ) {
+    }
+
+    #[Route('/{id}/history', name: 'task_history_list', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function history(int $id, ListTaskActivityService $activity): JsonResponse
+    {
+        return new JsonResponse(['data' => $activity->execute($id, $this->currentUser->currentUserId(), true)]);
     }
 
     #[Route('', name: 'task_list', methods: ['GET'])]

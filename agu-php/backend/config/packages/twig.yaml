@@ -1,0 +1,7 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    # Variável inexistente num template é erro (e não texto vazio): um e-mail com campo em branco passaria despercebido.
+    strict_variables: true
+    globals:
+        # Endereço do frontend, usado nos botões e links dos e-mails (FRONTEND_URL; padrão em services.yaml).
+        app_url: '%env(FRONTEND_URL)%'

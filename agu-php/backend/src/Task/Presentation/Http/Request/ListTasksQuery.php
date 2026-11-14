@@ -86,13 +86,16 @@ final class ListTasksQuery
      */
     public function toInput(): ListTasksInput
     {
+        $search = null === $this->q || '' === trim((string) $this->q) ? null : trim((string) $this->q);
+
         return new ListTasksInput(
             statuses: array_map(static fn (string $value): TaskStatus => TaskStatus::from($value), self::split($this->status)),
             priorities: array_map(static fn (string $value): TaskPriority => TaskPriority::from($value), self::split($this->priority)),
-            search: null === $this->q || '' === trim((string) $this->q) ? null : trim((string) $this->q),
+            search: $search,
             dueFrom: null === $this->dueFrom ? null : new \DateTimeImmutable((string) $this->dueFrom),
             dueTo: null === $this->dueTo ? null : new \DateTimeImmutable((string) $this->dueTo),
-            sortBy: null === $this->sort ? TaskSortField::CreatedAt : TaskSortField::from((string) $this->sort),
+            // Sem ordenação pedida: uma busca por texto vem por relevância; a listagem comum, pela data de criação.
+            sortBy: null === $this->sort ? (null === $search ? TaskSortField::CreatedAt : TaskSortField::Relevance) : TaskSortField::from((string) $this->sort),
             direction: null === $this->order ? SortDirection::Desc : SortDirection::from((string) $this->order),
             page: null === $this->page ? 1 : (int) $this->page,
             perPage: null === $this->perPage ? 20 : (int) $this->perPage,

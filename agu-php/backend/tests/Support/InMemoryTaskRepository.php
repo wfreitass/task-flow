@@ -44,4 +44,35 @@ final class InMemoryTaskRepository implements TaskRepositoryInterface
 
         return new TaskPage(\array_slice($owned, $criteria->offset(), $criteria->perPage), \count($owned));
     }
+
+    public function findById(int $id): ?Task
+    {
+        foreach ($this->tasks as $task) {
+            if ($task->id() === $id) {
+                return $task;
+            }
+        }
+
+        return null;
+    }
+
+    public function findAccessibleByIds(array $ids, int $userId): array
+    {
+        $found = [];
+        foreach ($ids as $id) {
+            $task = $this->findAccessibleById($id, $userId);
+            if (null !== $task) {
+                $found[] = $task;
+            }
+        }
+
+        return $found;
+    }
+
+    public function findActiveBatchAfterId(int $afterId, int $limit): array
+    {
+        $batch = array_filter($this->tasks, static fn (Task $task): bool => (int) $task->id() > $afterId && !$task->isDeleted());
+
+        return \array_slice(array_values($batch), 0, $limit);
+    }
 }

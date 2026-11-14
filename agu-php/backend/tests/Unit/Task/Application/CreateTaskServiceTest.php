@@ -108,7 +108,11 @@ final class CreateTaskServiceTest extends TestCase
             }
         };
 
-        $this->service = new CreateTaskService($this->tasks, $this->history, $clock, $this->transactions, $this->attachments, $this->storage, $detector, $directory, new TaskOutputFactory($directory), $this->events);
+        $this->service = new CreateTaskService($this->tasks, $this->history, $clock, $this->transactions, $this->attachments, $this->storage, $detector, $directory, new TaskOutputFactory($directory), $this->events, new class implements \App\Shared\Application\Port\PermissionCheckerInterface {
+            public function assertCan(int $userId, \App\Shared\Domain\Permission $permission): void
+            {
+            }
+        });
     }
 
     public function testCreatesTaskForAuthenticatedUserAndRecordsHistory(): void

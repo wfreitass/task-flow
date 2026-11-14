@@ -27,7 +27,8 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
 
     public function getRoles(): array
     {
-        return $this->user->roles();
+        // ROLE_USER é o papel básico de todo usuário autenticado; o outro é o perfil (admin ou executor).
+        return ['ROLE_USER', RoleNames::toSecurity($this->user->role())];
     }
 
     public function getPassword(): string

@@ -23,7 +23,11 @@
     "symfony/security-bundle": "^6.4",
     "symfony/messenger": "^6.4",
     "symfony/amqp-messenger": "^6.4",
-    "symfony/mailer": "^6.4"
+    "symfony/mailer": "^6.4",
+    "cboden/ratchet": "^0.4.4",
+    "react/http": "^1.9",
+    "symfony/http-client": "^6.4",
+    "symfony/twig-bundle": "^6.4"
   },
   "require-dev": {
     "symfony/maker-bundle": "^1.36",

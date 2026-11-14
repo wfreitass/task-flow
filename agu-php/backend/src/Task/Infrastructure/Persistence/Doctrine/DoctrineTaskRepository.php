@@ -65,6 +65,68 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
         return null === $entity ? null : $this->mapper->toDomain($entity);
     }
 
+    public function findById(int $id): ?Task
+    {
+        $entity = $this->entityManager->find(TaskEntity::class, $id);
+
+        return null === $entity ? null : $this->mapper->toDomain($entity);
+    }
+
+    public function findAccessibleByIds(array $ids, int $userId): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+
+        /** @var list<TaskEntity> $entities */
+        $entities = $this->entityManager->createQueryBuilder()
+            ->select('t')
+            ->from(TaskEntity::class, 't')
+            ->where('t.id IN (:ids)')
+            ->andWhere('t.deletedAt IS NULL')
+            ->andWhere('(t.createdBy = :user OR t.assignedTo = :user)')
+            ->setParameter('ids', $ids, ArrayParameterType::INTEGER)
+            ->setParameter('user', $userId)
+            ->getQuery()
+            ->getResult();
+
+        $byId = [];
+        foreach ($entities as $entity) {
+            $byId[(int) $entity->id] = $this->mapper->toDomain($entity);
+        }
+
+        // A ordem dos ids (a de relevância, vinda do índice de busca) é preservada.
+        $ordered = [];
+        foreach ($ids as $id) {
+            if (isset($byId[$id])) {
+                $ordered[] = $byId[$id];
+            }
+        }
+
+        return $ordered;
+    }
+
+    public function findActiveBatchAfterId(int $afterId, int $limit): array
+    {
+        /** @var list<TaskEntity> $entities */
+        $entities = $this->entityManager->createQueryBuilder()
+            ->select('t')
+            ->from(TaskEntity::class, 't')
+            ->where('t.id > :after')
+            ->andWhere('t.deletedAt IS NULL')
+            ->orderBy('t.id', 'ASC')
+            ->setMaxResults($limit)
+            ->setParameter('after', $afterId)
+            ->getQuery()
+            ->getResult();
+        $tasks = array_map(fn (TaskEntity $entity): Task => $this->mapper->toDomain($entity), $entities);
+
+        // Em tarefas grandes, solta os objetos do lote para não acumular memória.
+        $this->entityManager->clear();
+
+        return $tasks;
+    }
+
     public function search(TaskCriteria $criteria): TaskPage
     {
         $total = (int) $this->filtered($criteria)->select('COUNT(t.id)')->getQuery()->getSingleScalarResult();
@@ -139,7 +201,8 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
         }
 
         $field = match ($criteria->sortBy) {
-            TaskSortField::CreatedAt => 't.createdAt',
+            // Relevância só existe na busca por texto no índice; aqui (banco) vale a data de criação.
+            TaskSortField::CreatedAt, TaskSortField::Relevance => 't.createdAt',
             TaskSortField::DueDate => 't.dueDate',
             TaskSortField::Title => 't.title',
             TaskSortField::Status => 't.status',

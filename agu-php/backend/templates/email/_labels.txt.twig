@@ -1,0 +1,9 @@
+{#- Rótulos em português dos códigos de prioridade e de status. Importado pelos e-mails (HTML e texto). -#}
+{%- macro priority(code) -%}
+    {{- {'low': 'Baixa', 'medium': 'Média', 'high': 'Alta', 'urgent': 'Urgente'}[code] ?? code -}}
+{%- endmacro -%}
+
+{#- Os mesmos nomes da tabela `task_statuses`. -#}
+{%- macro status(code) -%}
+    {{- {'backlog': 'Backlog', 'todo': 'A fazer', 'in_progress': 'Em andamento', 'blocked': 'Bloqueada', 'done': 'Concluída', 'canceled': 'Cancelada'}[code] ?? code -}}
+{%- endmacro -%}

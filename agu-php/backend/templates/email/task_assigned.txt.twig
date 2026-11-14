@@ -1,0 +1,18 @@
+{#- Versão em texto puro do e-mail de tarefa atribuída (mesmas variáveis do .html.twig). Sem escape de HTML. -#}
+{%- import 'email/_labels.txt.twig' as labels -%}
+Olá, {{ assignee }}!
+
+{{ assigner }} atribuiu a tarefa "{{ task.title }}" a você.
+
+Prioridade: {{ labels.priority(task.priority) }}
+Status: {{ labels.status(task.status) }}
+{% if task.dueDate is not null %}
+Vencimento: {{ task.dueDate|date('d/m/Y H:i', 'UTC') }} (UTC)
+{% endif %}
+{% if task.description is not null %}
+
+Descrição:
+{{ task.description }}
+{% endif %}
+
+Abrir o TaskFlow: {{ app_url|trim('/', 'right') }}/tasks

@@ -1,0 +1,69 @@
+{#
+    Layout base de todos os e-mails HTML do TaskFlow. Cada e-mail estende este arquivo e preenche os blocos:
+      subject    assunto da mensagem (também vira o <title>)
+      preheader  texto de pré-visualização, mostrado ao lado do assunto na caixa de entrada
+      content    corpo do e-mail
+
+    Regras de e-mail HTML: tabelas para o layout e estilos inline (a maioria dos clientes ignora <style> e CSS
+    moderno). O <style> abaixo só ajusta telas pequenas e o modo escuro, nos clientes que o suportam.
+#}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>{% block subject %}TaskFlow{% endblock %}</title>
+    <style>
+        @media (max-width: 620px) {
+            .container { width: 100% !important; }
+            .gutter { padding-left: 20px !important; padding-right: 20px !important; }
+        }
+        @media (prefers-color-scheme: dark) {
+            .page { background-color: #0f172a !important; }
+            .card { background-color: #1e293b !important; border-color: #334155 !important; }
+            .panel { background-color: #0f172a !important; border-color: #334155 !important; }
+            .title, .strong { color: #f8fafc !important; }
+            .text { color: #cbd5e1 !important; }
+            .muted { color: #94a3b8 !important; }
+        }
+    </style>
+</head>
+<body class="page" style="margin:0; padding:0; background-color:#f1f5f9;">
+    {# Texto de pré-visualização: invisível no corpo, lido pela caixa de entrada. #}
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; font-size:1px; line-height:1px;">
+        {% block preheader %}{% endblock %}
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="page" style="background-color:#f1f5f9;">
+        <tr>
+            <td align="center" style="padding:24px 12px;">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" class="container" style="width:600px; max-width:600px;">
+                    {# Cabeçalho #}
+                    <tr>
+                        <td class="gutter" style="padding:0 0 16px 4px; font-family:Arial, Helvetica, sans-serif; font-size:20px; font-weight:bold; color:#4f46e5;">
+                            &#10003; TaskFlow
+                        </td>
+                    </tr>
+
+                    {# Cartão com o conteúdo #}
+                    <tr>
+                        <td class="card gutter" style="background-color:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:32px 36px; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#334155;">
+                            {% block content %}{% endblock %}
+                        </td>
+                    </tr>
+
+                    {# Rodapé #}
+                    <tr>
+                        <td class="gutter muted" style="padding:20px 8px 0 8px; font-family:Arial, Helvetica, sans-serif; font-size:12px; line-height:1.5; color:#64748b; text-align:center;">
+                            {% block footer %}Você recebeu este e-mail porque tem uma conta no TaskFlow.{% endblock %}<br>
+                            Esta é uma mensagem automática; não é necessário respondê-la.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -40,6 +40,8 @@ framework:
         # Para onde vai cada evento. Um evento novo precisa de uma linha aqui.
         routing:
             'App\Task\Domain\Event\TaskAssigned': async
+            'App\Task\Domain\Event\TaskStatusChanged': async
+            'App\Task\Domain\Event\TaskChanged': async
 
 # Nos testes não há RabbitMQ: as mensagens ficam em memória, e nada é consumido.
 when@test:

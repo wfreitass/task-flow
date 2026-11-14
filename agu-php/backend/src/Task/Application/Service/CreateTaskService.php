@@ -6,7 +6,9 @@ use App\Shared\Application\Port\ClockInterface;
 use App\Shared\Application\Port\EventPublisherInterface;
 use App\Shared\Application\Port\FileStorageInterface;
 use App\Shared\Application\Port\MimeTypeDetectorInterface;
+use App\Shared\Application\Port\PermissionCheckerInterface;
 use App\Shared\Application\Port\TransactionRunnerInterface;
+use App\Shared\Domain\Permission;
 use App\Task\Application\DTO\AttachmentOutput;
 use App\Task\Application\DTO\CreateTaskInput;
 use App\Task\Application\DTO\TaskOutput;
@@ -34,6 +36,7 @@ final class CreateTaskService
         private readonly UserDirectoryInterface $directory,
         private readonly TaskOutputFactory $outputs,
         private readonly EventPublisherInterface $events,
+        private readonly PermissionCheckerInterface $permissions,
     ) {
     }
 
@@ -46,6 +49,9 @@ final class CreateTaskService
      */
     public function execute(CreateTaskInput $input, int $authenticatedUserId): TaskOutput
     {
+        // Antes de qualquer outra coisa (inclusive de gravar arquivos): o perfil precisa permitir criar tarefas.
+        $this->permissions->assertCan($authenticatedUserId, Permission::TaskCreate);
+
         $now = $this->clock->now();
 
         $task = Task::create(

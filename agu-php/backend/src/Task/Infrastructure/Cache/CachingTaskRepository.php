@@ -22,7 +22,7 @@ use Symfony\Contracts\Service\ResetInterface;
  * (e cujas páginas se deslocam). O responsável anterior é lembrado de quando a tarefa foi carregada, o que vale
  * porque todo caso de uso carrega a tarefa antes de gravá-la.
  *
- * Só a listagem é cacheada. A leitura de uma tarefa (findAccessibleById) vai sempre ao banco, que é a fonte de verdade.
+ * Só a listagem sem busca por texto é cacheada. A leitura de uma tarefa (findAccessibleById) vai sempre ao banco, que é a fonte de verdade.
  */
 final class CachingTaskRepository implements TaskRepositoryInterface, ResetInterface
 {
@@ -33,7 +33,7 @@ final class CachingTaskRepository implements TaskRepositoryInterface, ResetInter
     private array $assigneeWhenLoaded = [];
 
     public function __construct(
-        private readonly TaskRepositoryInterface $inner,
+        private readonly TaskRepositoryInterface $source,
         private readonly CacheInterface $cache,
         private readonly AfterCommitActions $afterCommit,
         private readonly TaskPageCacheMapper $mapper,
@@ -43,7 +43,7 @@ final class CachingTaskRepository implements TaskRepositoryInterface, ResetInter
 
     public function add(Task $task): void
     {
-        $this->inner->add($task);
+        $this->source->add($task);
         $this->assigneeWhenLoaded[(int) $task->id()] = $task->assignedTo();
         $this->invalidateViewers([$task->createdBy(), $task->assignedTo()]);
     }
@@ -52,7 +52,7 @@ final class CachingTaskRepository implements TaskRepositoryInterface, ResetInter
     {
         $previousAssignee = $this->assigneeWhenLoaded[(int) $task->id()] ?? null;
 
-        $this->inner->save($task);
+        $this->source->save($task);
 
         $this->assigneeWhenLoaded[(int) $task->id()] = $task->assignedTo();
         $this->invalidateViewers([$task->createdBy(), $task->assignedTo(), $previousAssignee]);
@@ -60,7 +60,7 @@ final class CachingTaskRepository implements TaskRepositoryInterface, ResetInter
 
     public function findAccessibleById(int $id, int $userId): ?Task
     {
-        $task = $this->inner->findAccessibleById($id, $userId);
+        $task = $this->source->findAccessibleById($id, $userId);
         if (null !== $task) {
             $this->assigneeWhenLoaded[$id] = $task->assignedTo();
         }
@@ -68,12 +68,33 @@ final class CachingTaskRepository implements TaskRepositoryInterface, ResetInter
         return $task;
     }
 
+    public function findById(int $id): ?Task
+    {
+        return $this->source->findById($id);
+    }
+
+    public function findAccessibleByIds(array $ids, int $userId): array
+    {
+        return $this->source->findAccessibleByIds($ids, $userId);
+    }
+
+    public function findActiveBatchAfterId(int $afterId, int $limit): array
+    {
+        return $this->source->findActiveBatchAfterId($afterId, $limit);
+    }
+
     public function search(TaskCriteria $criteria): TaskPage
     {
+        // Busca por texto não é cacheada: vem do índice de busca, que é atualizado depois do commit (de forma
+        // assíncrona), e um resultado guardado agora poderia ficar sem a alteração que acabou de ser feita.
+        if (null !== $criteria->search && '' !== $criteria->search) {
+            return $this->source->search($criteria);
+        }
+
         $data = $this->cache->remember(
             $this->listKey($criteria),
             [self::viewerTag($criteria->viewerId)],
-            fn (): array => $this->mapper->toArray($this->inner->search($criteria)),
+            fn (): array => $this->mapper->toArray($this->source->search($criteria)),
             $this->listTtlSeconds,
         );
 
@@ -81,7 +102,7 @@ final class CachingTaskRepository implements TaskRepositoryInterface, ResetInter
             return $this->mapper->fromArray($data);
         } catch (\Throwable) {
             // Entrada em formato inesperado: ignora o cache e consulta o banco.
-            return $this->inner->search($criteria);
+            return $this->source->search($criteria);
         }
     }
 

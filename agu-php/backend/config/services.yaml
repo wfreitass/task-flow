@@ -1,8 +1,12 @@
 parameters:
+    # Endereço do frontend, usado nos botões e links dos e-mails. Em outros ambientes, defina FRONTEND_URL.
+    env(FRONTEND_URL): 'http://localhost:4200'
     # Armazenamento PRIVADO dos anexos: fora de public/, só acessível por um endpoint que valide o acesso.
     app.uploads_directory: '%kernel.project_dir%/var/uploads'
     # Validade da listagem de tarefas no cache, em segundos. É a rede de segurança: a invalidação por escrita é imediata.
     app.task_list_cache_ttl: 300
+    # Índice de tarefas no OpenSearch. Nos testes (APP_ENV=test) o índice é outro, para nunca misturar com o de desenvolvimento.
+    app.task_search_index: taskflow_tasks
 
 services:
     _defaults:
@@ -24,6 +28,31 @@ services:
         arguments:
             $from: '%env(MAIL_FROM)%'
 
+    # Tempo real: a aplicação entrega as mensagens ao servidor de WebSocket por HTTP interno (REALTIME_PUSH_URL),
+    # com um segredo compartilhado (REALTIME_PUSH_TOKEN). O mesmo segredo protege o endpoint /push do servidor.
+    App\Shared\Infrastructure\Realtime\HttpRealtimePublisher:
+        arguments:
+            $pushUrl: '%env(REALTIME_PUSH_URL)%'
+            $pushToken: '%env(REALTIME_PUSH_TOKEN)%'
+
+    # Loop de eventos do ReactPHP, compartilhado pelo servidor de WebSocket e pelo comando que o sobe.
+    React\EventLoop\LoopInterface:
+        factory: ['React\EventLoop\Loop', 'get']
+
+    App\Shared\Presentation\Console\ServeRealtimeCommand:
+        arguments:
+            $allowedOrigins: '%env(csv:CORS_ALLOWED_ORIGINS)%'
+            $pushToken: '%env(REALTIME_PUSH_TOKEN)%'
+
+    # Busca textual: OpenSearch (OPENSEARCH_URL, do docker-compose) e o nome do índice de tarefas.
+    App\Shared\Infrastructure\Search\OpenSearchClient:
+        arguments:
+            $baseUrl: '%env(OPENSEARCH_URL)%'
+
+    App\Task\Infrastructure\Search\OpenSearchTaskIndex:
+        arguments:
+            $indexName: '%app.task_search_index%'
+
     # Serviço de cache: usa o pool com tags definido em config/packages/cache.yaml.
     App\Shared\Infrastructure\Cache\TaggedPoolCache:
         arguments:
@@ -44,19 +73,29 @@ services:
     App\Shared\Application\Port\FileStorageInterface: '@App\Shared\Infrastructure\Storage\FileUploader'
     App\Shared\Application\Port\CacheInterface: '@App\Shared\Infrastructure\Cache\TaggedPoolCache'
     App\Shared\Application\Port\EmailSenderInterface: '@App\Shared\Infrastructure\Email\SymfonyMailerEmailSender'
+    App\Shared\Application\Port\EmailTemplateRendererInterface: '@App\Shared\Infrastructure\Email\TwigEmailTemplateRenderer'
     App\Shared\Application\Port\EventPublisherInterface: '@App\Shared\Infrastructure\Messaging\MessengerEventPublisher'
+    App\Shared\Application\Port\RealtimePublisherInterface: '@App\Shared\Infrastructure\Realtime\HttpRealtimePublisher'
+    App\Shared\Application\Port\AccessTokenVerifierInterface: '@App\User\Infrastructure\Security\LexikAccessTokenVerifier'
     App\Shared\Application\Port\MimeTypeDetectorInterface: '@App\Shared\Infrastructure\Storage\FinfoMimeTypeDetector'
 
-    # O repositório de tarefas é o decorator com cache, que envolve o repositório Doctrine.
+    # O repositório de tarefas é uma cadeia de decorators: cache (listagem) → busca (OpenSearch) → Doctrine (banco).
     App\Task\Domain\Repository\TaskRepositoryInterface: '@App\Task\Infrastructure\Cache\CachingTaskRepository'
+    App\Task\Infrastructure\Search\SearchingTaskRepository:
+        arguments:
+            $database: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskRepository'
+    App\Task\Application\Port\TaskSearchIndexInterface: '@App\Task\Infrastructure\Search\OpenSearchTaskIndex'
     App\Task\Infrastructure\Cache\CachingTaskRepository:
         arguments:
-            $inner: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskRepository'
+            $source: '@App\Task\Infrastructure\Search\SearchingTaskRepository'
             $listTtlSeconds: '%app.task_list_cache_ttl%'
     App\Task\Domain\Repository\TaskHistoryRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskHistoryRepository'
     App\Task\Domain\Repository\TaskAttachmentRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskAttachmentRepository'
     App\Task\Domain\Repository\TaskCommentRepositoryInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskCommentRepository'
+    App\Task\Application\Port\TaskActivityReaderInterface: '@App\Task\Infrastructure\Persistence\Doctrine\DoctrineTaskActivityReader'
     App\Shared\Application\Port\CurrentUserIdProviderInterface: '@App\User\Infrastructure\Security\AuthenticatedUserIdProvider'
+    # Perfis (admin/executor): os contextos perguntam por esta porta; o contexto User responde.
+    App\Shared\Application\Port\PermissionCheckerInterface: '@App\User\Infrastructure\Authorization\UserPermissionChecker'
 
     App\User\Domain\Repository\UserRepositoryInterface: '@App\User\Infrastructure\Persistence\Doctrine\DoctrineUserRepository'
     # O contexto Task consulta usuários por esta porta; quem a implementa é o contexto User.
@@ -64,3 +103,8 @@ services:
     App\Task\Application\Port\UserContactInterface: '@App\User\Infrastructure\Directory\UserContactDirectory'
     App\User\Application\Port\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
     App\User\Application\Port\TokenIssuerInterface: '@App\User\Infrastructure\Security\LexikTokenIssuer'
+
+# Nos testes o índice de busca é outro, para nunca misturar com o de desenvolvimento.
+when@test:
+    parameters:
+        app.task_search_index: taskflow_tasks_test

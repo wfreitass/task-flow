@@ -3,11 +3,13 @@
 namespace App\User\Infrastructure\Persistence\Doctrine;
 
 use App\User\Domain\Entity\User;
+use App\User\Domain\Enum\UserRole;
 use App\User\Domain\Exception\EmailAlreadyRegisteredException;
 use App\User\Domain\Exception\UsernameAlreadyTakenException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Persistence\Doctrine\Entity\UserEntity;
 use App\User\Infrastructure\Persistence\Doctrine\Mapper\UserMapper;
+use App\User\Infrastructure\Security\RoleNames;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -89,6 +91,28 @@ final class DoctrineUserRepository implements UserRepositoryInterface
         }
 
         $this->mapper->syncGeneratedId($user, $entity);
+    }
+
+    public function save(User $user): void
+    {
+        $entity = null === $user->id() ? null : $this->entityManager->find(UserEntity::class, $user->id());
+        if (null === $entity) {
+            throw new \LogicException('Só é possível gravar um usuário que já foi cadastrado.');
+        }
+
+        $this->mapper->fill($entity, $user);
+        $this->entityManager->flush();
+    }
+
+    public function countActiveAdminsForUpdate(): int
+    {
+        // `users.roles` é JSON: o filtro é em SQL. O FOR UPDATE trava as linhas dos admins até o fim da transação.
+        $ids = $this->entityManager->getConnection()->fetchFirstColumn(
+            'SELECT id FROM users WHERE is_active = 1 AND JSON_CONTAINS(roles, :role) FOR UPDATE',
+            ['role' => json_encode(RoleNames::toSecurity(UserRole::Admin))],
+        );
+
+        return \count($ids);
     }
 
     private function toDomain(?UserEntity $entity): ?User
